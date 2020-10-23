@@ -1,0 +1,11 @@
+	 CTAugment
+√		Write skeleton of CTAugment
+√		Make CTAugment work with batches	(johan)
+		Test with our data
+		Check the CTAugment update function
+	Rewrite to regular python files			(johan)
+	How will data be inputted into training loop
+	Install correct version of a TF-package
+	Write functionality to document results
+	Modify to make run on GPU
+	Write the report
