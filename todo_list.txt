@@ -1,11 +1,14 @@
 	 CTAugment
 √		Write skeleton of CTAugment
 √		Make CTAugment work with batches	(johan)
-		Test with our data
 		Check the CTAugment update function
-	Rewrite to regular python files			(johan)
+√	Rewrite to regular python files			(johan)
+	Test with our data
 	How will data be inputted into training loop
 	Install correct version of a TF-package
-	Write functionality to document results
+	Write functionality to document results		(johan)
+	Check that the backprop does what it should
+	Check the pseudo-labelling
 	Modify to make run on GPU
+	CTAugment move out of training loop
 	Write the report
