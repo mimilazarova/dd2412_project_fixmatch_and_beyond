@@ -6,6 +6,7 @@ import sys
 import logging
 
 def main(argv):
+    logging.basicConfig(level=logging.DEBUG)
     logging.info("now in main")
     data_directory = argv[0]
     dataset = argv[1]
