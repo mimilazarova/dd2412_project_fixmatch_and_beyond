@@ -21,12 +21,12 @@ def LoadData(filename, tensor=False):
     dataset = dataset.map(ParseFunction)
     
     # it = tf.compat.v1.data.make_one_shot_iterator(dataset) # Never used?
+    images = np.stack([x['image'] for x in dataset])
+    labels = np.stack([x['label'] for x in dataset])
 
     if tensor:
         return tf.data.Dataset.from_tensor_slices((images, labels))
     else:
-        images = np.stack([x['image'] for x in dataset])
-        labels = np.stack([x['label'] for x in dataset])
         return images, labels
     
 
@@ -56,7 +56,7 @@ def LoadAll(dir, dataset, seed, n_labeled, tensor=False):
     else: return ds_l, new_ds_u, ls
 
 
-def LoadTest(dir, dataset, tensor):
+def LoadTest(dir, dataset, tensor=False):
     data_fname = os.path.join(dir, "{}-test.tfrecord".format(dataset))
 
     return LoadData(data_fname, tensor)
