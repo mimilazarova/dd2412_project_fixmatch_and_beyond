@@ -1,5 +1,5 @@
-from wide_resnet import WRN_28_2
-from training_loop import *
+# from wide_resnet import WRN_28_2
+# from training_loop import *
 # import tensorflow_datasets as tfds
 from load_data import *
 import sys
@@ -20,4 +20,7 @@ def main(argv):
 
 
 if __name__ == "__main__":
+   print(sys.argv)
    main(sys.argv[1:])
+   print("done")
+
