@@ -21,16 +21,16 @@ def LoadData(filename, tensor=False):
     dataset = dataset.map(ParseFunction)
     
     # it = tf.compat.v1.data.make_one_shot_iterator(dataset) # Never used?
-    images = np.stack([x['image'] for x in dataset])
-    labels = np.stack([x['label'] for x in dataset])
 
     if tensor:
         return tf.data.Dataset.from_tensor_slices((images, labels))
     else:
+        images = np.stack([x['image'] for x in dataset])
+        labels = np.stack([x['label'] for x in dataset])
         return images, labels
     
 
-def load_all(dir, dataset, seed, n_labeled):
+def LoadAll(dir, dataset, seed, n_labeled, tensor=False):
     l_data_fname = os.path.join(dir, "{}.{}@{}-label.tfrecord".format(dataset, str(seed), str(n_labeled)))
     l_json_fname = os.path.join(dir, "{}.{}@{}-label.json".format(dataset, str(seed), str(n_labeled)))
     u_data_fname = os.path.join(dir, "{}-unlabel.tfrecord".format(dataset))
@@ -39,21 +39,26 @@ def load_all(dir, dataset, seed, n_labeled):
     with open(l_json_fname, "r") as f:
         l_json = json.load(f)['label']
 
-
     with open(u_json_fname, "r") as f:
         u_json = json.load(f)['indexes']
-
-    ds_l, ls = LoadData(l_data_fname)
-    ds_u, _ = LoadData(u_data_fname)
+        
+    if tensor:
+        ds_l = LoadData(l_data_fname, tensor)
+        ds_u = LoadData(u_data_fname, tensor)
+    
+    else:
+        ds_l, ls = LoadData(l_data_fname, tensor)
+        ds_u, _ = LoadData(u_data_fname, tensor)
 
     new_ds_u = np.stack([ds_u[i, :, :, :] for i in u_json if i not in l_json])
+    
+    if tensor: return ds_l, new_ds_u
+    else: return ds_l, new_ds_u, ls
 
-    return ds_l, new_ds_u, ls
 
-
-def load_test(dir, dataset):
+def LoadTest(dir, dataset, tensor):
     data_fname = os.path.join(dir, "{}-test.tfrecord".format(dataset))
 
-    return LoadData(data_fname)
+    return LoadData(data_fname, tensor)
 
 
