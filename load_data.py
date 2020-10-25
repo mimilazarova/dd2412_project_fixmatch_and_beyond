@@ -1,5 +1,8 @@
 import tensorflow as tf
 import numpy as np
+import json
+import os
+
 
 def ParseFunction(serialized, image_shape=[32, 32, 3]):
     features = {'image': tf.io.FixedLenFeature([], tf.string),
@@ -12,6 +15,7 @@ def ParseFunction(serialized, image_shape=[32, 32, 3]):
     data = dict(image=image, label=parsed_example['label'])
     return data
 
+
 def LoadData(filename):
     dataset = tf.data.TFRecordDataset(filename)
     dataset = dataset.map(ParseFunction)
@@ -21,3 +25,24 @@ def LoadData(filename):
     labels = np.stack([x['label'] for x in dataset])
 
     return images, labels
+
+def load_all(dir, dataset, seed, n_labeled):
+    l_data_fname = os.path.join(dir, "{}.{}@{}-label.tfrecord".format(dataset, str(seed), str(n_labeled)))
+    l_json_fname = os.path.join(dir, "{}.{}@{}-label.json".format(dataset, str(seed), str(n_labeled)))
+    u_data_fname = os.path.join(dir, "{}-unlabel.tfrecord".format(dataset))
+    u_json_fname = os.path.join(dir, "{}-unlabel.json".format(dataset))
+
+    with open(l_json_fname, "r") as f:
+        l_json = json.load(f)['label']
+
+    with open(u_json_fname, "r") as f:
+        u_json = json.load(f)['index']
+
+    ds_l, ls = LoadData(l_data_fname)
+    ds_u, _ = LoadData(u_data_fname)
+
+    new_ds_u = np.stack([ds_u[i, :, :, :] for i in u_json if i not in l_json])
+
+    return ds_l, new_ds_u, ls
+
+
