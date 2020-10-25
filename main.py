@@ -1,11 +1,23 @@
 from wide_resnet import WRN_28_2
 from training_loop import *
-import tensorflow_datasets as tfds
+# import tensorflow_datasets as tfds
+from load_data import *
+import sys
+import logging
 
-if __name__ == '__main__':
-    # temporary. Should be our own dataset_loader
-    ds = tfds.load('cifar10', as_supervised=True)
+def main(argv):
+    logging.info("now in main")
+    data_directory = argv[0]
+    dataset = argv[1]
+    seed = argv[2]
+    n_label = argv[3]
+    logging.info("args read")
+    lds, uds, lables = load_all(*argv)
+    logging.info("datasets loaded")
 
-    wrn_28_2 = WRN_28_2()
-    training(wrn_28_2, ds)
+    # wrn_28_2 = WRN_28_2()
+    # training(wrn_28_2, ds)
 
+
+if __name__ == "__main__":
+   main(sys.argv[1:])
