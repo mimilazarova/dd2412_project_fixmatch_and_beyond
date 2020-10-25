@@ -41,19 +41,16 @@ def LoadAll(dir, dataset, seed, n_labeled, tensor=False):
 
     with open(u_json_fname, "r") as f:
         u_json = json.load(f)['indexes']
-        
-    if tensor:
-        ds_l = LoadData(l_data_fname, tensor)
-        ds_u = LoadData(u_data_fname, tensor)
-    
-    else:
-        ds_l, ls = LoadData(l_data_fname, tensor)
-        ds_u, _ = LoadData(u_data_fname, tensor)
+
+    ds_l, ls = LoadData(l_data_fname)
+    ds_u, _ = LoadData(u_data_fname)
 
     new_ds_u = np.stack([ds_u[i, :, :, :] for i in u_json if i not in l_json])
-    
-    if tensor: return ds_l, new_ds_u
-    else: return ds_l, new_ds_u, ls
+
+    if tensor:
+        return tf.data.Dataset.from_tensor_slices((ds_l, ls)), tf.data.Dataset.from_tensor_slices((new_ds_u))
+
+    return ds_l, new_ds_u, ls
 
 
 def LoadTest(dir, dataset, tensor=False):
