@@ -47,3 +47,9 @@ def load_all(dir, dataset, seed, n_labeled):
     return ds_l, new_ds_u, ls
 
 
+def load_test(dir, dataset):
+    data_fname = os.path.join(dir, "{}-test.tfrecord".format(dataset))
+
+    return LoadData(data_fname)
+
+
