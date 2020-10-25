@@ -16,7 +16,7 @@ def ParseFunction(serialized, image_shape=[32, 32, 3]):
     return data
 
 
-def LoadData(filename):
+def LoadData(filename, tensor=False):
     dataset = tf.data.TFRecordDataset(filename)
     dataset = dataset.map(ParseFunction)
     
@@ -24,7 +24,11 @@ def LoadData(filename):
     images = np.stack([x['image'] for x in dataset])
     labels = np.stack([x['label'] for x in dataset])
 
-    return images, labels
+    if tensor:
+        return tf.data.Dataset.from_tensor_slices((images, labels))
+    else:
+        return images, labels
+    
 
 def load_all(dir, dataset, seed, n_labeled):
     l_data_fname = os.path.join(dir, "{}.{}@{}-label.tfrecord".format(dataset, str(seed), str(n_labeled)))
