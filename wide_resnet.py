@@ -10,8 +10,8 @@ import tensorflow as tf
 
 
 def regularized_padded_conv(*args, **kwargs):
-    return tf.keras.layers.Conv2D(*args, **kwargs, padding='same', kernel_regularizer=_regularizer,
-                                  kernel_initializer='he_normal', use_bias=False)
+    return tf.keras.layers.Conv2D(*args, padding='same', kernel_regularizer=_regularizer,
+                                  kernel_initializer='he_normal', use_bias=False, **kwargs)
 
 
 def BN_ReLU(x):
