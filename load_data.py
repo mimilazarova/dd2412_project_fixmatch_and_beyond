@@ -36,7 +36,7 @@ def load_all(dir, dataset, seed, n_labeled):
         l_json = json.load(f)['label']
 
     with open(u_json_fname, "r") as f:
-        u_json = json.load(f)['index']
+        u_json = json.load(f)['indexes']
 
     ds_l, ls = LoadData(l_data_fname)
     ds_u, _ = LoadData(u_data_fname)
