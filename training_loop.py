@@ -37,7 +37,7 @@ class OurCosineDecay(tf.keras.experimental.CosineDecay):
 
 def training(model, ds_l, ds_u, hparams, mean=None, std=None,
              val_interval=2000, log_interval=200, batch_size=128):
-    
+
     schedule = OurCosineDecay(hparams['eta'], hparams['K'])
     optimizer = tf.keras.optimizers.SGD(schedule, momentum=hparams['beta'], nesterov=hparams['nesterov'])
     loss_fn = tf.keras.losses.SparseCategoricalCrossentropy(from_logits=True)
