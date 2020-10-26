@@ -59,7 +59,7 @@ def training(model, ds_l, ds_u, hparams, n_classes, mean=None, std=None,
         max_probs = tf.math.multiply(one_hot, tf.nn.softmax(logits))
         return tf.cast(max_probs > threshold, max_probs.dtype)  # * max_probs
 
-    def split_data_into_arrays(ds):
+    def split_data_into_arrays_l(ds):
         images = []
         labels = []
         for ex in ds.take(50000000):
@@ -69,6 +69,15 @@ def training(model, ds_l, ds_u, hparams, n_classes, mean=None, std=None,
             except:
                 break
         return np.stack(images), np.stack(labels)
+
+    def split_data_into_arrays_u(ds):
+        images = []
+        for ex in ds.take(50000000):
+            try:
+                images.append(ex[0])
+            except:
+                break
+        return np.stack(images)
 
     # @tf.function
     def step(x_l, y_l, x_u, n_classes, training):
@@ -120,8 +129,8 @@ def training(model, ds_l, ds_u, hparams, n_classes, mean=None, std=None,
 
     cta = CTAugment(hparams['cta_classes'], hparams['cta_decay'], hparams['cta_threshold'], hparams['cta_depth'])
 
-    full_x_l, full_y_l = split_data_into_arrays(ds_l)
-    full_x_u, _ = split_data_into_arrays(ds_u)
+    full_x_l, full_y_l = split_data_into_arrays_l(ds_l)
+    full_x_u = split_data_into_arrays_u(ds_u)
 
     # split into batches
     ds_l = ds_l.map(train_prep).batch(hparams['batch_size']).prefetch(-1)
