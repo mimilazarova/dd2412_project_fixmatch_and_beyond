@@ -41,6 +41,10 @@ def training(model, ds_l, ds_u, hparams, n_classes, mean=None, std=None,
         x = tf.cast(x, tf.float32)  # /255.
         return x, y
 
+    def unlabelled_prep(x):
+        x = tf.cast(x, tf.float32)
+        return x
+
     def weak_transformation(x):
         x = tf.image.random_flip_left_right(x)
         max_shift = tf.cast(x.shape[1] * 0.125, dtype=tf.dtypes.int32)
@@ -123,7 +127,7 @@ def training(model, ds_l, ds_u, hparams, n_classes, mean=None, std=None,
 
     # split into batches
     ds_l = ds_l.map(train_prep).batch(hparams['batch_size']).prefetch(-1)
-    ds_u = ds_u.map(train_prep).batch(hparams['batch_size']).prefetch(-1)
+    ds_u = ds_u.map(unlabelled_prep).batch(hparams['batch_size']).prefetch(-1)
 
     # runid = run_name + '_x' + str(np.random.randint(10000))
     # writer = tf.summary.create_file_writer(logdir + '/' + runid)
@@ -141,8 +145,7 @@ def training(model, ds_l, ds_u, hparams, n_classes, mean=None, std=None,
     for epoch in range(epochs):
 
         y_u = np.array([])
-        for (x_l, y_l), x_u in tqdm(zip(ds_l, ds_u), desc=f'epoch {epoch + 1}/{epochs}',
-                                         total=val_interval, ncols=100, ascii=True):
+        for (x_l, y_l), x_u in tqdm(zip(ds_l, ds_u), desc='epoch {}/{}'.format(epoch+1, epochs), total=val_interval, ncols=100, ascii=True):
             tf.print("step")
 
             training_step += 1
@@ -155,7 +158,7 @@ def training(model, ds_l, ds_u, hparams, n_classes, mean=None, std=None,
             if training_step % log_interval == 0:
                 # with writer.as_default():
                 loss_l, loss_u, err = labeled_loss.result(), unlabeled_loss.result(), 1 - accuracy.result()
-                print(f" loss_l: {loss_l:^6.3f} | loss_u: {loss_u:^6.3f} | err: {err:^6.3f}", end='\r')
+                #print(f" loss_l: {loss_l:^6.3f} | loss_u: {loss_u:^6.3f} | err: {err:^6.3f}", end='\r')
 
                 tf.summary.scalar('train/error_rate', err, training_step)
                 tf.summary.scalar('train/labeled_loss', loss_l, training_step)
