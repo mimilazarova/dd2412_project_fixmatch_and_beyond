@@ -24,7 +24,7 @@ def main(argv):
     # training(wrn_28_2, ds)
 
     err = test_error(wrn_28_2, test, test_labels)
-    logging.info(f"{err} on {dataset}.{seed}@{n_label}-label")
+    logging.info("{} on {}.{}@{}-label".format(err, dataset, seed, n_label))
 
 
 if __name__ == "__main__":
