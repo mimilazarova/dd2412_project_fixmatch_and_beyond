@@ -136,12 +136,12 @@ def training(model, ds_l, ds_u, hparams, n_classes, mean=None, std=None,
 
     training_step = 0
     best_validation_acc = 0
-    epochs = 5
-
+    epochs = hparams['epochs']
     for epoch in range(epochs):
 
         y_u = np.array([])
-        for (x_l, y_l), x_u in tqdm(zip(ds_l, ds_u), desc=f'epoch {epoch + 1}/{epochs}',
+
+        for (x_l, y_l), x_u in tqdm(zip(ds_l, ds_u), #desc=f'epoch {epoch + 1}/{epochs}',
                                          total=val_interval, ncols=100, ascii=True):
             tf.print("step")
 

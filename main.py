@@ -17,7 +17,7 @@ B = 64        # number of labeled examples in batch(in training)
 K = 2 ** 20
 nesterov = False
 batch_size = 2  # should be 64?
-epoch = 5
+epochs = 5
 # weight decay
 # SGD instead of Adam
 
@@ -29,7 +29,7 @@ cta_depth = 2
 cta_threshold = 0.8
 
 hparams = {'lamda': lamda, 'eta': eta, 'beta': beta, 'tau': tau, 'mu': mu, 'B': B, 'K': K, 'nesterov': False, 'batch_size': batch_size,
-           'epoch': epoch,
+           'epochs': epochs,
            'cta_classes': cta_classes, 'cta_decay': cta_decay, 'cta_depth': cta_depth, 'cta_threshold': cta_threshold}
 
 def main(argv):
