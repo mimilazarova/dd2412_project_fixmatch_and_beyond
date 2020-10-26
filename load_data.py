@@ -11,7 +11,7 @@ def ParseFunction(serialized, image_shape=[32, 32, 3]):
     parsed_example = tf.io.parse_single_example(serialized=serialized, features=features) 
     image = tf.image.decode_image(parsed_example['image'])
     image.set_shape(image_shape)
-    image = tf.cast(image, tf.float32) #* (2.0 / 255) - 1.0
+    # image = tf.cast(image, tf.float32) #* (2.0 / 255) - 1.0
     data = dict(image=image, label=parsed_example['label'])
     return data
 

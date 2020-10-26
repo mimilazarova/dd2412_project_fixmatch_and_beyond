@@ -14,7 +14,7 @@ def main(argv):
     n_label = argv[3]
     test_directory = argv[4]
     logging.info("args read")
-    lds, uds, lables = LoadAll(data_directory, dataset, seed, n_label)
+    lds, uds, labels = LoadAll(data_directory, dataset, seed, n_label)
     logging.info("datasets loaded")
     test, test_labels = LoadTest(test_directory, dataset)
     logging.info("test dataset loaded")
@@ -22,7 +22,9 @@ def main(argv):
     wrn_28_2 = WRN_28_2()
     logging.info("model created")
     # training(wrn_28_2, ds)
-
+    del lds
+    del uds
+    del labels
     err = test_error(wrn_28_2, test, test_labels)
     logging.info("{} on {}.{}@{}-label".format(err, dataset, seed, n_label))
 
