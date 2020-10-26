@@ -1,5 +1,5 @@
 from wide_resnet import WRN_28_2
-from training_loop import test_error
+from error import test_error
 # import tensorflow_datasets as tfds
 from load_data import *
 import sys
