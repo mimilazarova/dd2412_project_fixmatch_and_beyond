@@ -75,14 +75,11 @@ def training(model, ds_l, ds_u, hparams, n_classes, mean=None, std=None,
         with tf.GradientTape() as tape:
             tf.print("y_l", y_l)
 
-            if y_l.ndim is 1:
-                y_l = tf.one_hot(y_l, n_classes)
-
                 # labeled data
             x_l_weak = weak_transformation(x_l)
             output_l = model(x_l_weak, training)
 
-            loss_l = loss_fn(y_l, output_l)
+            loss_l = loss_fn_l(y_l, output_l)
 
             # unlabeled data
             x_u_weak = weak_transformation(x_u)
@@ -94,7 +91,7 @@ def training(model, ds_l, ds_u, hparams, n_classes, mean=None, std=None,
             output_u_strong = model(x_u_strong, training)
             cta.update_weights_batch(y_u, output_u_strong, choices, bins)  #
 
-            loss_u = loss_fn(y_u, output_u_strong)
+            loss_u = loss_fn_u(y_u, output_u_strong)
 
             # tf.print(loss_u)
             # print(loss_u)
@@ -118,7 +115,8 @@ def training(model, ds_l, ds_u, hparams, n_classes, mean=None, std=None,
 
     schedule = OurCosineDecay(hparams['eta'], hparams['K'])
     optimizer = tf.keras.optimizers.SGD(schedule, momentum=hparams['beta'], nesterov=hparams['nesterov'])
-    loss_fn = tf.keras.losses.CategoricalCrossentropy(from_logits=True)
+    loss_fn_u = tf.keras.losses.CategoricalCrossentropy(from_logits=True)
+    loss_fn_l = tf.keras.losses.SparseCategoricalCrossentropy(from_logits=True)
 
     cta = CTAugment(hparams['cta_classes'], hparams['cta_decay'], hparams['cta_threshold'], hparams['cta_depth'])
 
