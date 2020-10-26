@@ -35,7 +35,7 @@ class OurCosineDecay(tf.keras.experimental.CosineDecay):
             return math_ops.multiply(initial_learning_rate, decayed)
 
 
-def training(model, ds_l, ds_u, hparams, n_classes, mean=None, std=None,
+def training(model, full_x_l, full_x_u, full_y_l, hparams, n_classes, mean=None, std=None,
              val_interval=2000, log_interval=200):
     def train_prep(x, y):
         x = tf.cast(x, tf.float32)  # /255.
@@ -129,8 +129,11 @@ def training(model, ds_l, ds_u, hparams, n_classes, mean=None, std=None,
 
     cta = CTAugment(hparams['cta_classes'], hparams['cta_decay'], hparams['cta_threshold'], hparams['cta_depth'])
 
-    full_x_l, full_y_l = split_data_into_arrays_l(ds_l)
-    full_x_u = split_data_into_arrays_u(ds_u)
+    # full_x_l, full_y_l = split_data_into_arrays_l(ds_l)
+    # full_x_u = split_data_into_arrays_u(ds_u)
+
+    ds_l = tf.data.Dataset.from_tensor_slices((full_x_l, full_y_l))
+    ds_u = tf.data.Dataset.from_tensor_slices(full_x_u)
 
     # split into batches
     ds_l = ds_l.map(train_prep).batch(hparams['batch_size']).prefetch(-1)

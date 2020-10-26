@@ -41,14 +41,14 @@ def main(argv):
     n_classes = argv[4]
     test_directory = argv[5]
     logging.info("args read")
-    lds, uds = LoadAll(data_directory, dataset, seed, n_label, tensor=True)
+    lds, uds, labels = LoadAll(data_directory, dataset, seed, n_label)
     logging.info("datasets loaded")
     test, test_labels = LoadTest(test_directory, dataset)
     logging.info("test dataset loaded")
 
     wrn_28_2 = WRN_28_2()
     logging.info("model created")
-    training(wrn_28_2, lds, uds, hparams, n_classes)
+    training(wrn_28_2, lds, uds, labels, hparams, n_classes)
 
     err = test_error(wrn_28_2, test, test_labels)
     logging.info("{} on {}.{}@{}-label".format(err, dataset, seed, n_label))
