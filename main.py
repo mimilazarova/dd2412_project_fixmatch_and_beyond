@@ -47,10 +47,10 @@ def main(argv):
 
     wrn_28_2 = WRN_28_2()
     logging.info("model created")
-    training(wrn_28_2, lds, uds, labels, hparams, n_classes)
-
-    err = test_error(wrn_28_2, test, test_labels)
-    logging.info("{} on {}.{}@{}-label".format(err, dataset, seed, n_label))
+    model = training(wrn_28_2, lds, uds, labels, hparams, n_classes)
+    logging.info("model trained")
+    err = test_error(model, test, test_labels)
+    logging.info("Test accuracy: {} on {}.{}@{}-label".format(err, dataset, seed, n_label))
 
 
 if __name__ == "__main__":

@@ -126,14 +126,15 @@ def training(model, full_x_l, full_x_u, full_y_l, hparams, n_classes, mean=None,
 
         if supervised:
             # not enough unlabeled data
+            tf.print(supervised)
             for x_l, y_l in tqdm(ds_l, desc='epoch {}/{}'.format(epoch + 1, epochs),
                                         total=val_interval, ncols=100, ascii=True):
                 training_step += 1
                 
                 with tf.GradientTape() as tape:
                     # train on labeled data
-                    tf.print("supervised ", x_l.shape)
-                    print("supervised ", x_l.shape)
+                    # tf.print("supervised ", x_l.shape)
+                    # print("supervised ", x_l.shape)
                     x_l_weak = weak_transformation(x_l)
                     output_l_weak = model(x_l_weak, True)
                     loss = loss_fn_l(y_l, output_l_weak)
@@ -191,3 +192,5 @@ def training(model, full_x_l, full_x_u, full_y_l, hparams, n_classes, mean=None,
                     ds_u = ds_u.batch(hparams['batch_size']).prefetch(-1)
                 else:
                     supervised = True
+
+    return model
