@@ -84,7 +84,7 @@ def training(model, full_x_l, full_x_u, full_y_l, hparams, n_classes, mean=None,
             # update CTAugment weights
             x_l_strong, choices, bins = cta.augment_batch(x_l)
             output_l_strong = model(x_l_strong, training)
-            cta.update_weights_batch(y_l, n_classes, output_l_strong, choices, bins)
+            cta.update_weights_batch(y_l, output_l_strong, choices, bins, n_classes)
 
             # unlabeled data
             x_u_weak = weak_transformation(x_u)
