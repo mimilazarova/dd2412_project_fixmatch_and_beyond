@@ -156,6 +156,7 @@ def training(model, full_x_l, full_x_u, full_y_l, hparams, n_classes, mean=None,
 
         tf.print(full_x_u.shape, full_x_l.shape, y_u.shape, full_y_l.shape)
         y_dim = y_u.shape[0]
+        all_y_dim = full_x_u.shape[0]
         # Update labeled and unlabeled datasets
         new_x_l = [full_x_u[i, :, :, :] for i in range(y_dim) if y_u[i] > -1]
         new_y_l = [y_u[i] for i in range(y_dim) if y_u[i] > -1]
@@ -164,7 +165,7 @@ def training(model, full_x_l, full_x_u, full_y_l, hparams, n_classes, mean=None,
             new_x_l = np.stack(new_x_l)
             new_y_l = np.stack(new_y_l)
 
-            new_x_u = [full_x_u[i, :, :, :] for i in range(y_dim) if y_u[i] == -1]
+            new_x_u = [full_x_u[i, :, :, :] for i in range(all_y_dim) if i >= y_dim or y_u[i] == -1]
             full_x_u = new_x_u
 
             if len(full_x_u) > 0:
