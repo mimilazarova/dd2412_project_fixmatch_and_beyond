@@ -63,7 +63,7 @@ def training(model, full_x_l, full_x_u, full_y_l, hparams, n_classes, mean=None,
     # @tf.function
     def step(x_l, y_l, x_u, n_classes, training):
         with tf.GradientTape() as tape:
-            tf.print("y_l", y_l)
+            # tf.print("y_l", y_l)
 
                 # labeled data
             x_l_weak = weak_transformation(x_l)
@@ -93,9 +93,6 @@ def training(model, full_x_l, full_x_u, full_y_l, hparams, n_classes, mean=None,
             gradients = tape.gradient(loss, model.trainable_weights)
             optimizer.apply_gradients(zip(gradients, model.trainable_weights))
 
-        class_pred = tf.math.argmax(output_l, axis=1)
-        tmp = tf.argmax(y_l, axis=1)
-        # accuracy(tmp, class_pred)
         labeled_loss(loss_l)
         unlabeled_loss(loss_u)
 
