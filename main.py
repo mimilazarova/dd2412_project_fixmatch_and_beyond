@@ -31,6 +31,7 @@ hparams = {'lamda': lamda, 'eta': eta, 'beta': beta, 'tau': tau, 'mu': mu, 'B': 
            'cta_decay': cta_decay, 'cta_depth': cta_depth, 'cta_threshold': cta_threshold}
 
 def main(argv):
+    print(argv)
     logging.info("now in main")
     data_directory = argv[0]
     dataset = argv[1]
@@ -51,7 +52,7 @@ def main(argv):
     logging.info("model trained")
     err = test_error(model, test, test_labels)
     logging.info("Test accuracy: {} on {}.{}@{}-label".format(err, dataset, seed, n_label))
-
+    print("Test accuracy: {} on {}.{}@{}-label".format(err, dataset, seed, n_label))
 
 if __name__ == "__main__":
     logging.basicConfig(level=logging.DEBUG)
