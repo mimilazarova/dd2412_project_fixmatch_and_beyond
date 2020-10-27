@@ -114,8 +114,8 @@ def training(model, full_x_l, full_x_u, full_y_l, hparams, n_classes, mean=None,
     ds_u = tf.data.Dataset.from_tensor_slices(full_x_u)
 
     # split into batches
-    ds_l = ds_l.batch(hparams['batch_size']).prefetch(-1)#.map(train_prep).batch(hparams['batch_size']).prefetch(-1)
-    ds_u = ds_u.batch(hparams['batch_size']).prefetch(-1)#.map(unlabelled_prep).batch(hparams['batch_size']).prefetch(-1)
+    ds_l = ds_l.batch(hparams['batch_size']).shuffle(full_x_l.shape[0], reshuffle_each_iteration=True).prefetch(-1)#.map(train_prep).batch(hparams['batch_size']).prefetch(-1)
+    ds_u = ds_u.batch(hparams['batch_size']).shuffle(full_x_u.shape[0], reshuffle_each_iteration=True).prefetch(-1)#.map(unlabelled_prep).batch(hparams['batch_size']).prefetch(-1)
 
     # runid = run_name + '_x' + str(np.random.randint(10000))
     # writer = tf.summary.create_file_writer(logdir + '/' + runid)

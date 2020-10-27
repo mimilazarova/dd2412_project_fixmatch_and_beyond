@@ -12,3 +12,6 @@
 	Modify to make run on GPU
 	CTAugment move out of training loop
 	Write the report
+
+
+ python3 main.py /data 1 10 10 

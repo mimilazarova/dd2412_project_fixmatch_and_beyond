@@ -7,17 +7,18 @@ import logging
 from training_loop import training
 
 
-# hyperparams
+# hyperparams   (most are from section 4 in the FixMatch paper)
 lamda = 1     # proportion of unlabeled loss in total loss
 eta = 0.03    # learning rate
 beta = 0.09   # momentum
 tau = 0.95    # threshold in pseudo-labeling
 mu = 0.7      # proportion of unlabeled samples in batch
-B = 64        # number of labeled examples in batch(in training)
-K = 2 ** 20
+B = 64        # number of labeled examples in batch (in training)
+K = 2 ** 20   # number of training steps in total
 nesterov = False
-batch_size = 2  # should be 64?
+batch_size = 2  # should be 64? and is it the same as B?
 epochs = 5
+size = 50000  # size of training dataset
 # weight decay
 # SGD instead of Adam
 
