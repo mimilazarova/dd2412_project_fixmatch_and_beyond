@@ -37,7 +37,7 @@ def main(argv):
     dataset = argv[1]
     seed = argv[2]
     n_label = argv[3]
-    n_classes = argv[4]
+    n_classes = int(argv[4])
     test_directory = argv[5]
     logging.info("args read")
     lds, uds, labels = LoadAll(data_directory, dataset, seed, n_label)
