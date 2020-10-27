@@ -55,7 +55,7 @@ class CTAugment:
         return p / np.sum(p)
 
     def augment(self, x):
-        aug_x = Image.fromarray(np.uint8(255 * x))
+        aug_x = Image.fromarray(np.uint8(x))
 
         choices = [self.options[i] for i in np.random.choice(np.arange(self.N), self.depth, replace=False)]
         bins = []
@@ -105,7 +105,7 @@ class CTAugment:
         label_one_hot = np.zeros(self.n_classes)
         label_one_hot[label] = 1
                                                     #tf.math.abs(label - pred)
-        omega = 1 - 1 / (2 * self.n_classes) * np.sum(np.absolute(label - pred))
+        omega = 1 - 1 / (2 * self.n_classes) * np.sum(np.absolute(label_one_hot - pred))
 
         for k in range(self.depth):
 
