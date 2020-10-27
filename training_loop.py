@@ -57,7 +57,7 @@ def shuffle(a):
 def training(model, full_x_l, full_x_u, full_y_l, hparams, n_classes, mean=None, std=None,
              val_interval=2000, log_interval=200):
 
-
+    full_x_u = full_x_u[:500]
 
     def weak_transformation(x):
         x = tf.image.random_flip_left_right(x)
@@ -119,7 +119,7 @@ def training(model, full_x_l, full_x_u, full_y_l, hparams, n_classes, mean=None,
     ds_l = ds_l.batch(hparams['batch_size']).prefetch(-1)
     ds_u = ds_u.batch(hparams['batch_size']).prefetch(-1)
     # if type casting needed: x = tf.cast(x, tf.float32)
-    supervised = True #supervised = False
+    supervised = False
     training_step = 0
     epochs = hparams['epochs']
     for epoch in range(epochs):
@@ -132,8 +132,8 @@ def training(model, full_x_l, full_x_u, full_y_l, hparams, n_classes, mean=None,
                 
                 with tf.GradientTape() as tape:
                     # train on labeled data
-                    tf.print(x_l.shape)
-                    print(x_l.shape)
+                    tf.print("supervised ", x_l.shape)
+                    print("supervised ", x_l.shape)
                     x_l_weak = weak_transformation(x_l)
                     output_l_weak = model(x_l_weak, True)
                     loss = loss_fn_l(y_l, output_l_weak)
