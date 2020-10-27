@@ -104,8 +104,8 @@ class CTAugment:
     def update_weights(self, label, pred, choices, bins):
         label_one_hot = np.zeros(self.n_classes)
         label_one_hot[label] = 1
-
-        omega = 1 - 1 / (2 * self.n_classes) * np.sum(tf.math.abs(label - pred))
+                                                    #tf.math.abs(label - pred)
+        omega = 1 - 1 / (2 * self.n_classes) * np.sum(np.absolute(label - pred))
 
         for k in range(self.depth):
 
