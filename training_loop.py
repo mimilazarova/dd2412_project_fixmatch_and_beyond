@@ -138,7 +138,7 @@ def training(model, full_x_l, full_x_u, full_y_l, hparams, n_classes, mean=None,
             y_batch = step(x_l, y_l, x_u, n_classes, training=True)
             # y_batch[1] = np.random.randint(0, 9)
             y_u = np.concatenate((y_u, y_batch), axis=None)
-            tf.print(y_u)
+            # tf.print(y_u)
             # tf.print(y_batch)
 
             if training_step % log_interval == 0:
@@ -154,7 +154,7 @@ def training(model, full_x_l, full_x_u, full_y_l, hparams, n_classes, mean=None,
                 unlabeled_loss.reset_states()
                 accuracy.reset_states()
 
-        tf.print(full_x_u.shape, full_x_l.shape, y_u.shape, full_y_l)
+        tf.print(full_x_u.shape, full_x_l.shape, y_u.shape, full_y_l.shape)
         y_dim = y_u.shape[0]
         # Update labeled and unlabeled datasets
         new_x_l = [full_x_u[i, :, :, :] for i in range(y_dim) if y_u[i] > -1]
@@ -172,7 +172,7 @@ def training(model, full_x_l, full_x_u, full_y_l, hparams, n_classes, mean=None,
 
             full_x_l = np.concatenate((full_x_l, new_x_l))
             full_y_l = np.concatenate((full_y_l, new_y_l), axis=None).astype(np.int64)
-            tf.print(full_x_u.shape, full_x_l.shape, y_u.shape, full_y_l)
+            tf.print(full_x_u.shape, full_x_l.shape, y_u.shape, full_y_l.shape)
 
             ds_l = tf.data.Dataset.from_tensor_slices((full_x_l, full_y_l))
             ds_u = tf.data.Dataset.from_tensor_slices(full_x_u)
