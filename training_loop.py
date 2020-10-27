@@ -71,9 +71,7 @@ def training(model, full_x_l, full_x_u, full_y_l, hparams, n_classes, mean=None,
         max_probs = tf.math.multiply(one_hot, tf.nn.softmax(logits))
         return tf.cast(max_probs > threshold, max_probs.dtype)  # * max_probs
 
-
-    # @tf.function
-    def step(x_l, y_l, x_u, training):
+    def step(x_l, y_l, x_u):
         with tf.GradientTape() as tape:
 
             # labeled data
@@ -95,34 +93,11 @@ def training(model, full_x_l, full_x_u, full_y_l, hparams, n_classes, mean=None,
             output_u_strong = model(x_u_strong, training)
             loss_u = loss_fn_u(y_u, output_u_strong)
 
-
-            # # labeled data
-            # x_l_weak = weak_transformation(x_l)
-            # output_l = model(x_l_weak, training)
-            #
-            # loss_l = loss_fn_l(y_l, output_l)
-            #
-            # # unlabeled data
-            # x_u_weak = weak_transformation(x_u)
-            # output_u_weak = model(x_u_weak, training)  # should this be training or not?
-            # y_u = pseudolabel(output_u_weak)
-            # y_u = threshold_gate(y_u, output_u_weak, hparams['tau'])
-            #
-            # x_u_strong, choices, bins = cta.augment_batch(x_u)
-            # output_u_strong = model(x_u_strong, training)
-            # cta.update_weights_batch(y_u, output_u_strong, choices, bins)  #
-            #
-            # loss_u = loss_fn_u(y_u, output_u_strong)
-
             # add losses together
             loss = loss_l + hparams['lamda'] * loss_u
 
-        if training:
-            gradients = tape.gradient(loss, model.trainable_weights)
-            optimizer.apply_gradients(zip(gradients, model.trainable_weights))
-
-        labeled_loss(loss_l)
-        unlabeled_loss(loss_u)
+        gradients = tape.gradient(loss, model.trainable_weights)
+        optimizer.apply_gradients(zip(gradients, model.trainable_weights))
 
         labels = np.argmax(y_u, axis=1)
         labels[np.sum(y_u, axis=1) == 0] = -1
@@ -139,73 +114,63 @@ def training(model, full_x_l, full_x_u, full_y_l, hparams, n_classes, mean=None,
     ds_u = tf.data.Dataset.from_tensor_slices(full_x_u)
 
     # split into batches
-    ds_l = ds_l.batch(hparams['batch_size']).prefetch(-1)#.map(train_prep).batch(hparams['batch_size']).prefetch(-1)
-    ds_u = ds_u.batch(hparams['batch_size']).prefetch(-1)#.map(unlabelled_prep).batch(hparams['batch_size']).prefetch(-1)
+    ds_l = ds_l.batch(hparams['batch_size']).prefetch(-1)
+    ds_u = ds_u.batch(hparams['batch_size']).prefetch(-1)
     # if type casting needed: x = tf.cast(x, tf.float32)
-
-    # runid = run_name + '_x' + str(np.random.randint(10000))
-    # writer = tf.summary.create_file_writer(logdir + '/' + runid)
-    accuracy = tf.metrics.SparseCategoricalAccuracy()
-    labeled_loss = tf.metrics.Mean()
-    unlabeled_loss = tf.metrics.Mean()
-
-    # print(f"RUNID: {runid}")
-    # tf.keras.utils.plot_model(model)#, os.path.join('saved_plots', runid + '.png'))
 
     training_step = 0
     epochs = hparams['epochs']
     for epoch in range(epochs):
 
-        y_u = np.array([])
-        for (x_l, y_l), x_u in tqdm(zip(ds_l, ds_u), desc='epoch {}/{}'.format(epoch+1, epochs), total=val_interval, ncols=100, ascii=True):
+        if full_x_u.shape[0] < hparams['batch_size']:
+            # not enough unlabeled data
+            for x_l, y_l in tqdm(ds_l, desc='epoch {}/{}'.format(epoch + 1, epochs),
+                                        total=val_interval, ncols=100, ascii=True):
+                training_step += 1
+                
+                with tf.GradientTape() as tape:
+                    # train on labeled data
+                    x_l_weak = weak_transformation(x_l)
+                    output_l_weak = model(x_l_weak, training)
+                    loss = loss_fn_l(y_l, output_l_weak)
 
-            training_step += 1
-            y_batch = step(x_l, y_l, x_u, training=True)
-            y_u = np.concatenate((y_u, y_batch), axis=None)
+                    gradients = tape.gradient(loss, model.trainable_weights)
+                    optimizer.apply_gradients(zip(gradients, model.trainable_weights))
+        else:
+            y_u = np.array([])
+            for (x_l, y_l), x_u in tqdm(zip(ds_l, ds_u), desc='epoch {}/{}'.format(epoch+1, epochs), total=val_interval, ncols=100, ascii=True):
 
-            if training_step % log_interval == 0:
-                # with writer.as_default():
-                loss_l, loss_u, err = labeled_loss.result(), unlabeled_loss.result(), 1 - accuracy.result()
-                #print(f" loss_l: {loss_l:^6.3f} | loss_u: {loss_u:^6.3f} | err: {err:^6.3f}", end='\r')
+                training_step += 1
+                y_batch = step(x_l, y_l, x_u)
+                y_u = np.concatenate((y_u, y_batch), axis=None)
 
-                tf.summary.scalar('train/error_rate', err, training_step)
-                tf.summary.scalar('train/labeled_loss', loss_l, training_step)
-                tf.summary.scalar('train/unlabeled_loss', loss_u, training_step)
-                tf.summary.scalar('train/learnig_rate', optimizer._decayed_lr('float32'), training_step)
-                labeled_loss.reset_states()
-                unlabeled_loss.reset_states()
-                accuracy.reset_states()
+            tf.print(full_x_u.shape, full_x_l.shape, y_u.shape, full_y_l.shape)
+            y_dim = y_u.shape[0]
+            all_y_dim = full_x_u.shape[0]
 
-        tf.print(full_x_u.shape, full_x_l.shape, y_u.shape, full_y_l.shape)
-        y_dim = y_u.shape[0]
-        all_y_dim = full_x_u.shape[0]
-        # Update labeled and unlabeled datasets
-        new_x_l = [full_x_u[i, :, :, :] for i in range(y_dim) if y_u[i] > -1]
-        new_y_l = [y_u[i] for i in range(y_dim) if y_u[i] > -1]
+            # Update labeled and unlabeled datasets
+            new_x_l = [full_x_u[i, :, :, :] for i in range(y_dim) if y_u[i] > -1]
+            new_y_l = [y_u[i] for i in range(y_dim) if y_u[i] > -1]
 
-        if len(new_x_l) > 0:
-            new_x_l = np.stack(new_x_l)
-            new_y_l = np.stack(new_y_l)
+            if len(new_x_l) > 0:
+                new_x_l = np.stack(new_x_l)
+                new_y_l = np.stack(new_y_l)
 
-            new_x_u = [full_x_u[i, :, :, :] for i in range(all_y_dim) if i >= y_dim or y_u[i] == -1]
-            full_x_u = new_x_u
+                new_x_u = [full_x_u[i, :, :, :] for i in range(all_y_dim) if i >= y_dim or y_u[i] == -1]
+                full_x_u = new_x_u
 
-            if len(full_x_u) > 0:
-                full_x_u = np.stack(full_x_u)
+                if len(full_x_u) > 0:
+                    full_x_u = np.stack(full_x_u)
 
-            full_x_l = np.concatenate((full_x_l, new_x_l))
-            full_y_l = np.concatenate((full_y_l, new_y_l), axis=None).astype(np.int64)
-            tf.print(full_x_l.shape, full_y_l.shape)
+                full_x_l = np.concatenate((full_x_l, new_x_l))
+                full_y_l = np.concatenate((full_y_l, new_y_l), axis=None).astype(np.int64)
+                tf.print(full_x_u.shape, full_x_l.shape, y_u.shape, full_y_l.shape)
 
-            full_x_l, full_y_l = shuffle_in_unison(full_x_l, full_y_l)
-            full_x_u = shuffle(full_x_u)
+                full_x_l, full_y_l = shuffle_in_unison(full_x_l, full_y_l)
+                full_x_u = shuffle(full_x_u)
 
-            ds_l = tf.data.Dataset.from_tensor_slices((full_x_l, full_y_l))
-            ds_u = tf.data.Dataset.from_tensor_slices(full_x_u)
+                ds_l = tf.data.Dataset.from_tensor_slices((full_x_l, full_y_l))
+                ds_u = tf.data.Dataset.from_tensor_slices(full_x_u)
 
-            ds_l = ds_l.batch(hparams['batch_size']).prefetch(-1)#.map(train_prep).batch(hparams['batch_size']).prefetch(-1)
-            ds_u = ds_u.batch(hparams['batch_size']).prefetch(-1)#.map(unlabelled_prep).batch(hparams['batch_size']).prefetch(-1)
-
-        labeled_loss.reset_states()
-        unlabeled_loss.reset_states()
-        accuracy.reset_states()
+                ds_l = ds_l.batch(hparams['batch_size']).prefetch(-1)
+                ds_u = ds_u.batch(hparams['batch_size']).prefetch(-1)
