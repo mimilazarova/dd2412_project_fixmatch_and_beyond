@@ -57,8 +57,6 @@ def shuffle(a):
 def training(model, full_x_l, full_x_u, full_y_l, hparams, n_classes, mean=None, std=None,
              val_interval=2000, log_interval=200):
 
-    full_x_u = full_x_u[:500]
-
     def weak_transformation(x):
         x = tf.image.random_flip_left_right(x)
         max_shift = tf.cast(x.shape[1] * 0.125, dtype=tf.dtypes.int32)
