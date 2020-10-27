@@ -59,25 +59,6 @@ def training(model, full_x_l, full_x_u, full_y_l, hparams, n_classes, mean=None,
         max_probs = tf.math.multiply(one_hot, tf.nn.softmax(logits))
         return tf.cast(max_probs > threshold, max_probs.dtype)  # * max_probs
 
-    def split_data_into_arrays_l(ds):
-        images = []
-        labels = []
-        for ex in ds.take(50000000):
-            try:
-                images.append(ex[0])
-                labels.append(ex[1])
-            except:
-                break
-        return np.stack(images), np.stack(labels)
-
-    def split_data_into_arrays_u(ds):
-        images = []
-        for ex in ds.take(50000000):
-            try:
-                images.append(ex[0])
-            except:
-                break
-        return np.stack(images)
 
     # @tf.function
     def step(x_l, y_l, x_u, n_classes, training):
@@ -136,8 +117,8 @@ def training(model, full_x_l, full_x_u, full_y_l, hparams, n_classes, mean=None,
     ds_u = tf.data.Dataset.from_tensor_slices(full_x_u)
 
     # split into batches
-    ds_l = ds_l.map(train_prep).batch(hparams['batch_size']).prefetch(-1)
-    ds_u = ds_u.map(unlabelled_prep).batch(hparams['batch_size']).prefetch(-1)
+    ds_l = ds_l.batch(hparams['batch_size']).prefetch(-1)#.map(train_prep).batch(hparams['batch_size']).prefetch(-1)
+    ds_u = ds_u.batch(hparams['batch_size']).prefetch(-1)#.map(unlabelled_prep).batch(hparams['batch_size']).prefetch(-1)
 
     # runid = run_name + '_x' + str(np.random.randint(10000))
     # writer = tf.summary.create_file_writer(logdir + '/' + runid)
@@ -155,13 +136,12 @@ def training(model, full_x_l, full_x_u, full_y_l, hparams, n_classes, mean=None,
 
         y_u = np.array([])
         for (x_l, y_l), x_u in tqdm(zip(ds_l, ds_u), desc='epoch {}/{}'.format(epoch+1, epochs), total=val_interval, ncols=100, ascii=True):
-            tf.print("step")
 
             training_step += 1
             y_batch = step(x_l, y_l, x_u, n_classes, training=True)
             # y_batch[1] = np.random.randint(0, 9)
-            y_u = np.concatenate((y_u, y_batch))
-
+            y_u = np.concatenate((y_u, y_batch), axis=None)
+            tf.print(y_u)
             # tf.print(y_batch)
 
             if training_step % log_interval == 0:
@@ -177,13 +157,9 @@ def training(model, full_x_l, full_x_u, full_y_l, hparams, n_classes, mean=None,
                 unlabeled_loss.reset_states()
                 accuracy.reset_states()
 
-        tf.print(full_x_u.shape, full_x_l.shape)
+        tf.print(full_x_u.shape, full_x_l.shape, y_u.shape, full_y_l)
         y_dim = y_u.shape[0]
-        tf.print(y_u.shape)
-        tf.print("number unlabeled samlples {}".format(y_dim))
-
         # Update labeled and unlabeled datasets
-        tf.print(full_x_u.shape, y_dim, y_u.shape)
         new_x_l = [full_x_u[i, :, :, :] for i in range(y_dim) if y_u[i] > -1]
         new_y_l = [y_u[i] for i in range(y_dim) if y_u[i] > -1]
 
@@ -198,16 +174,16 @@ def training(model, full_x_l, full_x_u, full_y_l, hparams, n_classes, mean=None,
                 full_x_u = np.stack(full_x_u)
 
             full_x_l = np.concatenate((full_x_l, new_x_l))
-            full_y_l = np.concatenate((full_y_l, new_y_l)).astype(np.int64)
+            full_y_l = np.concatenate((full_y_l, new_y_l), axis=None).astype(np.int64)
+            tf.print(full_x_u.shape, full_x_l.shape, y_u.shape, full_y_l)
 
-            # print(full_x_l.shape, full_y_l.shape, full_x_u.shape, np.ones([full_x_u.shape[0],]).shape)
             ds_l = tf.data.Dataset.from_tensor_slices((full_x_l, full_y_l))
             ds_u = tf.data.Dataset.from_tensor_slices(full_x_u)
 
             # ds_u.apply(tf.data.experimental.unbatch())
 
-            ds_l = ds_l.map(train_prep).batch(hparams['batch_size']).prefetch(-1)
-            ds_u = ds_u.map(train_prep).batch(hparams['batch_size']).prefetch(-1)
+            ds_l = ds_l.batch(hparams['batch_size']).prefetch(-1)#.map(train_prep).batch(hparams['batch_size']).prefetch(-1)
+            ds_u = ds_u.batch(hparams['batch_size']).prefetch(-1)#.map(unlabelled_prep).batch(hparams['batch_size']).prefetch(-1)
 
         labeled_loss.reset_states()
         unlabeled_loss.reset_states()
