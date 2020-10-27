@@ -11,25 +11,24 @@ lamda = 1     # proportion of unlabeled loss in total loss
 eta = 0.03    # learning rate
 beta = 0.09   # momentum
 tau = 0.95    # threshold in pseudo-labeling
-mu = 0.7      # proportion of unlabeled samples in batch
+mu = 7        # proportion of unlabeled samples in batch
 B = 64        # number of labeled examples in batch (in training)
-K = 2 ** 20   # number of training steps in total
-nesterov = False
+K = 390625   # number of training steps in total
+nesterov = True
 batch_size = 64  # should be 64?
-epochs = 50
+epochs = 500
 # weight decay
 # SGD instead of Adam
 
 
 #CTAugment params
-cta_classes = 10
 cta_decay = 0.99
 cta_depth = 2
 cta_threshold = 0.8
 
 hparams = {'lamda': lamda, 'eta': eta, 'beta': beta, 'tau': tau, 'mu': mu, 'B': B, 'K': K, 'nesterov': False, 'batch_size': batch_size,
            'epochs': epochs,
-           'cta_classes': cta_classes, 'cta_decay': cta_decay, 'cta_depth': cta_depth, 'cta_threshold': cta_threshold}
+           'cta_decay': cta_decay, 'cta_depth': cta_depth, 'cta_threshold': cta_threshold}
 
 def main(argv):
     logging.info("now in main")
@@ -38,6 +37,7 @@ def main(argv):
     seed = argv[2]
     n_label = argv[3]
     n_classes = int(argv[4])
+    hparams['cta_classes'] = n_classes
     test_directory = argv[5]
     logging.info("args read")
     lds, uds, labels = LoadAll(data_directory, dataset, seed, n_label)
