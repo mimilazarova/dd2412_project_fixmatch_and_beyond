@@ -35,6 +35,25 @@ class OurCosineDecay(tf.keras.experimental.CosineDecay):
             return math_ops.multiply(initial_learning_rate, decayed)
 
 
+def shuffle_in_unison(a, b):
+    assert len(a) == len(b)
+    shuffled_a = np.empty(a.shape, dtype=a.dtype)
+    shuffled_b = np.empty(b.shape, dtype=b.dtype)
+    permutation = np.random.permutation(len(a))
+    for old_index, new_index in enumerate(permutation):
+        shuffled_a[new_index] = a[old_index]
+        shuffled_b[new_index] = b[old_index]
+    return shuffled_a, shuffled_b
+
+
+def shuffle(a):
+    shuffled_a = np.empty(a.shape, dtype=a.dtype)
+    permutation = np.random.permutation(len(a))
+    for old_index, new_index in enumerate(permutation):
+        shuffled_a[new_index] = a[old_index]
+    return shuffled_a
+
+
 def training(model, full_x_l, full_x_u, full_y_l, hparams, n_classes, mean=None, std=None,
              val_interval=2000, log_interval=200):
     def train_prep(x, y):
@@ -114,8 +133,8 @@ def training(model, full_x_l, full_x_u, full_y_l, hparams, n_classes, mean=None,
     ds_u = tf.data.Dataset.from_tensor_slices(full_x_u)
 
     # split into batches
-    ds_l = ds_l.batch(hparams['batch_size']).shuffle(full_x_l.shape[0], reshuffle_each_iteration=True).prefetch(-1)#.map(train_prep).batch(hparams['batch_size']).prefetch(-1)
-    ds_u = ds_u.batch(hparams['batch_size']).shuffle(full_x_u.shape[0], reshuffle_each_iteration=True).prefetch(-1)#.map(unlabelled_prep).batch(hparams['batch_size']).prefetch(-1)
+    ds_l = ds_l.batch(hparams['batch_size']).prefetch(-1)#.map(train_prep).batch(hparams['batch_size']).prefetch(-1)
+    ds_u = ds_u.batch(hparams['batch_size']).prefetch(-1)#.map(unlabelled_prep).batch(hparams['batch_size']).prefetch(-1)
 
     # runid = run_name + '_x' + str(np.random.randint(10000))
     # writer = tf.summary.create_file_writer(logdir + '/' + runid)
@@ -174,6 +193,9 @@ def training(model, full_x_l, full_x_u, full_y_l, hparams, n_classes, mean=None,
             full_x_l = np.concatenate((full_x_l, new_x_l))
             full_y_l = np.concatenate((full_y_l, new_y_l), axis=None).astype(np.int64)
             tf.print(full_x_u.shape, full_x_l.shape, y_u.shape, full_y_l.shape)
+
+            full_x_l, full_y_l = shuffle_in_unison(full_x_l, full_y_l)
+            full_x_u = shuffle(full_x_u)
 
             ds_l = tf.data.Dataset.from_tensor_slices((full_x_l, full_y_l))
             ds_u = tf.data.Dataset.from_tensor_slices(full_x_u)
