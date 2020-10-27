@@ -159,18 +159,26 @@ def training(model, full_x_l, full_x_u, full_y_l, hparams, n_classes, mean=None,
                 new_x_u = [full_x_u[i, :, :, :] for i in range(all_y_dim) if i >= y_dim or y_u[i] == -1]
                 full_x_u = new_x_u
 
-                if len(full_x_u) > 0:
-                    full_x_u = np.stack(full_x_u)
-
                 full_x_l = np.concatenate((full_x_l, new_x_l))
                 full_y_l = np.concatenate((full_y_l, new_y_l), axis=None).astype(np.int64)
-                tf.print(full_x_u.shape, full_x_l.shape, y_u.shape, full_y_l.shape)
 
                 full_x_l, full_y_l = shuffle_in_unison(full_x_l, full_y_l)
-                full_x_u = shuffle(full_x_u)
-
                 ds_l = tf.data.Dataset.from_tensor_slices((full_x_l, full_y_l))
-                ds_u = tf.data.Dataset.from_tensor_slices(full_x_u)
-
                 ds_l = ds_l.batch(hparams['batch_size']).prefetch(-1)
-                ds_u = ds_u.batch(hparams['batch_size']).prefetch(-1)
+
+                if len(full_x_u) > 0:
+                    full_x_u = np.stack(full_x_u)
+                    full_x_u = shuffle(full_x_u)
+                    ds_u = tf.data.Dataset.from_tensor_slices(full_x_u)
+                    ds_u = ds_u.batch(hparams['batch_size']).prefetch(-1)
+
+            else:
+                full_x_l, full_y_l = shuffle_in_unison(full_x_l, full_y_l)
+                ds_l = tf.data.Dataset.from_tensor_slices((full_x_l, full_y_l))
+                ds_l = ds_l.batch(hparams['batch_size']).prefetch(-1)
+
+                if len(full_x_u) > 0:
+                    full_x_u = np.stack(full_x_u)
+                    full_x_u = shuffle(full_x_u)
+                    ds_u = tf.data.Dataset.from_tensor_slices(full_x_u)
+                    ds_u = ds_u.batch(hparams['batch_size']).prefetch(-1)
