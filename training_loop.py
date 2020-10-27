@@ -57,6 +57,8 @@ def shuffle(a):
 def training(model, full_x_l, full_x_u, full_y_l, hparams, n_classes, mean=None, std=None,
              val_interval=2000, log_interval=200):
 
+
+
     def weak_transformation(x):
         x = tf.image.random_flip_left_right(x)
         max_shift = tf.cast(x.shape[1] * 0.125, dtype=tf.dtypes.int32)
@@ -117,12 +119,12 @@ def training(model, full_x_l, full_x_u, full_y_l, hparams, n_classes, mean=None,
     ds_l = ds_l.batch(hparams['batch_size']).prefetch(-1)
     ds_u = ds_u.batch(hparams['batch_size']).prefetch(-1)
     # if type casting needed: x = tf.cast(x, tf.float32)
-
+    supervised = False
     training_step = 0
     epochs = hparams['epochs']
     for epoch in range(epochs):
 
-        if full_x_u.shape[0] < hparams['batch_size']:
+        if supervised:
             # not enough unlabeled data
             for x_l, y_l in tqdm(ds_l, desc='epoch {}/{}'.format(epoch + 1, epochs),
                                         total=val_interval, ncols=100, ascii=True):
@@ -171,6 +173,8 @@ def training(model, full_x_l, full_x_u, full_y_l, hparams, n_classes, mean=None,
                     full_x_u = shuffle(full_x_u)
                     ds_u = tf.data.Dataset.from_tensor_slices(full_x_u)
                     ds_u = ds_u.batch(hparams['batch_size']).prefetch(-1)
+                else:
+                    supervised = True
 
             else:
                 full_x_l, full_y_l = shuffle_in_unison(full_x_l, full_y_l)
@@ -182,3 +186,5 @@ def training(model, full_x_l, full_x_u, full_y_l, hparams, n_classes, mean=None,
                     full_x_u = shuffle(full_x_u)
                     ds_u = tf.data.Dataset.from_tensor_slices(full_x_u)
                     ds_u = ds_u.batch(hparams['batch_size']).prefetch(-1)
+                else:
+                    supervised = True
