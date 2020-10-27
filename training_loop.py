@@ -56,13 +56,6 @@ def shuffle(a):
 
 def training(model, full_x_l, full_x_u, full_y_l, hparams, n_classes, mean=None, std=None,
              val_interval=2000, log_interval=200):
-    def train_prep(x, y):
-        x = tf.cast(x, tf.float32)  # /255.
-        return x, y
-
-    def unlabelled_prep(x):
-        x = tf.cast(x, tf.float32)
-        return x
 
     def weak_transformation(x):
         x = tf.image.random_flip_left_right(x)
@@ -82,28 +75,44 @@ def training(model, full_x_l, full_x_u, full_y_l, hparams, n_classes, mean=None,
     # @tf.function
     def step(x_l, y_l, x_u, n_classes, training):
         with tf.GradientTape() as tape:
-            # tf.print("y_l", y_l)
 
-                # labeled data
+            # labeled data
             x_l_weak = weak_transformation(x_l)
-            output_l = model(x_l_weak, training)
+            output_l_weak = model(x_l_weak, training)
+            loss_l = loss_fn_l(y_l, output_l_weak)
 
-            loss_l = loss_fn_l(y_l, output_l)
+            # update CTAugment weights
+            x_l_strong, choices, bins = cta.augment_batch(x_l)
+            output_l_strong = model(x_l_strong, training)
+            cta.update_weights_batch(tf.one_hot(y_l, n_classes), output_l_strong, choices, bins)
 
             # unlabeled data
             x_u_weak = weak_transformation(x_u)
             output_u_weak = model(x_u_weak, training)  # should this be training or not?
             y_u = pseudolabel(output_u_weak)
             y_u = threshold_gate(y_u, output_u_weak, hparams['tau'])
-
             x_u_strong, choices, bins = cta.augment_batch(x_u)
             output_u_strong = model(x_u_strong, training)
-            cta.update_weights_batch(y_u, output_u_strong, choices, bins)  #
-
             loss_u = loss_fn_u(y_u, output_u_strong)
 
-            # tf.print(loss_u)
-            # print(loss_u)
+
+            # # labeled data
+            # x_l_weak = weak_transformation(x_l)
+            # output_l = model(x_l_weak, training)
+            #
+            # loss_l = loss_fn_l(y_l, output_l)
+            #
+            # # unlabeled data
+            # x_u_weak = weak_transformation(x_u)
+            # output_u_weak = model(x_u_weak, training)  # should this be training or not?
+            # y_u = pseudolabel(output_u_weak)
+            # y_u = threshold_gate(y_u, output_u_weak, hparams['tau'])
+            #
+            # x_u_strong, choices, bins = cta.augment_batch(x_u)
+            # output_u_strong = model(x_u_strong, training)
+            # cta.update_weights_batch(y_u, output_u_strong, choices, bins)  #
+            #
+            # loss_u = loss_fn_u(y_u, output_u_strong)
 
             # add losses together
             loss = loss_l + hparams['lamda'] * loss_u
@@ -126,15 +135,13 @@ def training(model, full_x_l, full_x_u, full_y_l, hparams, n_classes, mean=None,
 
     cta = CTAugment(hparams['cta_classes'], hparams['cta_decay'], hparams['cta_threshold'], hparams['cta_depth'])
 
-    # full_x_l, full_y_l = split_data_into_arrays_l(ds_l)
-    # full_x_u = split_data_into_arrays_u(ds_u)
-
     ds_l = tf.data.Dataset.from_tensor_slices((full_x_l, full_y_l))
     ds_u = tf.data.Dataset.from_tensor_slices(full_x_u)
 
     # split into batches
     ds_l = ds_l.batch(hparams['batch_size']).prefetch(-1)#.map(train_prep).batch(hparams['batch_size']).prefetch(-1)
     ds_u = ds_u.batch(hparams['batch_size']).prefetch(-1)#.map(unlabelled_prep).batch(hparams['batch_size']).prefetch(-1)
+    # if type casting needed: x = tf.cast(x, tf.float32)
 
     # runid = run_name + '_x' + str(np.random.randint(10000))
     # writer = tf.summary.create_file_writer(logdir + '/' + runid)
@@ -146,7 +153,6 @@ def training(model, full_x_l, full_x_u, full_y_l, hparams, n_classes, mean=None,
     # tf.keras.utils.plot_model(model)#, os.path.join('saved_plots', runid + '.png'))
 
     training_step = 0
-    best_validation_acc = 0
     epochs = hparams['epochs']
     for epoch in range(epochs):
 
@@ -155,10 +161,7 @@ def training(model, full_x_l, full_x_u, full_y_l, hparams, n_classes, mean=None,
 
             training_step += 1
             y_batch = step(x_l, y_l, x_u, n_classes, training=True)
-            # y_batch[1] = np.random.randint(0, 9)
             y_u = np.concatenate((y_u, y_batch), axis=None)
-            # tf.print(y_u)
-            # tf.print(y_batch)
 
             if training_step % log_interval == 0:
                 # with writer.as_default():
@@ -199,8 +202,6 @@ def training(model, full_x_l, full_x_u, full_y_l, hparams, n_classes, mean=None,
 
             ds_l = tf.data.Dataset.from_tensor_slices((full_x_l, full_y_l))
             ds_u = tf.data.Dataset.from_tensor_slices(full_x_u)
-
-            # ds_u.apply(tf.data.experimental.unbatch())
 
             ds_l = ds_l.batch(hparams['batch_size']).prefetch(-1)#.map(train_prep).batch(hparams['batch_size']).prefetch(-1)
             ds_u = ds_u.batch(hparams['batch_size']).prefetch(-1)#.map(unlabelled_prep).batch(hparams['batch_size']).prefetch(-1)
