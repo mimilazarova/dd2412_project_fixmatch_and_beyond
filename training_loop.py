@@ -119,7 +119,7 @@ def training(model, full_x_l, full_x_u, full_y_l, hparams, n_classes, mean=None,
     ds_l = ds_l.batch(hparams['batch_size']).prefetch(-1)
     ds_u = ds_u.batch(hparams['batch_size']).prefetch(-1)
     # if type casting needed: x = tf.cast(x, tf.float32)
-    supervised = False
+    supervised = True #supervised = False
     training_step = 0
     epochs = hparams['epochs']
     for epoch in range(epochs):
@@ -132,6 +132,8 @@ def training(model, full_x_l, full_x_u, full_y_l, hparams, n_classes, mean=None,
                 
                 with tf.GradientTape() as tape:
                     # train on labeled data
+                    tf.print(x_l.shape)
+                    print(x_l.shape)
                     x_l_weak = weak_transformation(x_l)
                     output_l_weak = model(x_l_weak, True)
                     loss = loss_fn_l(y_l, output_l_weak)
@@ -168,7 +170,8 @@ def training(model, full_x_l, full_x_u, full_y_l, hparams, n_classes, mean=None,
                 ds_l = tf.data.Dataset.from_tensor_slices((full_x_l, full_y_l))
                 ds_l = ds_l.batch(hparams['batch_size']).prefetch(-1)
 
-                if len(full_x_u) > 0:
+                #if len(full_x_u) > 0:  CHANGED
+                if len(full_x_u) > hparams['batch_size']:
                     full_x_u = np.stack(full_x_u)
                     full_x_u = shuffle(full_x_u)
                     ds_u = tf.data.Dataset.from_tensor_slices(full_x_u)
