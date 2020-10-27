@@ -15,3 +15,7 @@
 
 
  python3 main.py /data 1 10 10 
+
+
+cifar10.3@40-label.json
+cifar10.3@40-label.json

@@ -133,7 +133,7 @@ def training(model, full_x_l, full_x_u, full_y_l, hparams, n_classes, mean=None,
                 with tf.GradientTape() as tape:
                     # train on labeled data
                     x_l_weak = weak_transformation(x_l)
-                    output_l_weak = model(x_l_weak, training)
+                    output_l_weak = model(x_l_weak, True)
                     loss = loss_fn_l(y_l, output_l_weak)
 
                     gradients = tape.gradient(loss, model.trainable_weights)
