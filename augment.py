@@ -90,7 +90,7 @@ class CTAugment:
         batch_bins = []
 
         if batch.ndim == 3:
-            sample, choices, bins = self.augment(sample)
+            sample, choices, bins = self.augment(batch)
             batch_choices.append(choices)
             batch_bins.append(bins)
         elif batch.ndim == 4:
@@ -101,7 +101,10 @@ class CTAugment:
 
         return aug_batch, batch_choices, batch_bins
 
-    def update_weights(self, label, pred, choices, bins):
+    def update_weights(self, label, n_classes, pred, choices, bins):
+        label_one_hot = np.zeros((label.size, n_classes + 1))
+        label_one_hot[np.arange(label.size), label] = 1
+
         omega = 1 - 1 / (2 * self.n_classes) * np.sum(tf.math.abs(label - pred))
 
         for k in range(self.depth):
