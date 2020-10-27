@@ -76,21 +76,21 @@ def training(model, full_x_l, full_x_u, full_y_l, hparams, n_classes, mean=None,
 
             # labeled data
             x_l_weak = weak_transformation(x_l)
-            output_l_weak = model(x_l_weak, training)
+            output_l_weak = model(x_l_weak, True)
             loss_l = loss_fn_l(y_l, output_l_weak)
 
             # update CTAugment weights
             x_l_strong, choices, bins = cta.augment_batch(x_l)
-            output_l_strong = model(x_l_strong, training)
+            output_l_strong = model(x_l_strong, True)
             cta.update_weights_batch(y_l, output_l_strong, choices, bins)
 
             # unlabeled data
             x_u_weak = weak_transformation(x_u)
-            output_u_weak = model(x_u_weak, training)  # should this be training or not?
+            output_u_weak = model(x_u_weak, True)
             y_u = pseudolabel(output_u_weak)
             y_u = threshold_gate(y_u, output_u_weak, hparams['tau'])
             x_u_strong, choices, bins = cta.augment_batch(x_u)
-            output_u_strong = model(x_u_strong, training)
+            output_u_strong = model(x_u_strong, True)
             loss_u = loss_fn_u(y_u, output_u_strong)
 
             # add losses together
