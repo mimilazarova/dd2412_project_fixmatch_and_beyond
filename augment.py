@@ -101,9 +101,9 @@ class CTAugment:
 
         return aug_batch, batch_choices, batch_bins
 
-    def update_weights(self, label, pred, choices, bins, n_classes):
-        label_one_hot = np.zeros((label.size, n_classes + 1))
-        label_one_hot[np.arange(label.size), label] = 1
+    def update_weights(self, label, pred, choices, bins):
+        label_one_hot = np.zeros(self.n_classes)
+        label_one_hot[label] = 1
 
         omega = 1 - 1 / (2 * self.n_classes) * np.sum(tf.math.abs(label - pred))
 
@@ -119,8 +119,8 @@ class CTAugment:
                 w[bins[k]["bin2"]] = self.decay * w[bins[k]["bin2"]] + (1 - self.decay) * omega
                 # print(tmp-w)
 
-    def update_weights_batch(self, labels, preds, choices, bins, n_classes):
-        [self.update_weights(l, p, c, b, n_classes) for l, p, c, b in zip(labels, preds, choices, bins)]
+    def update_weights_batch(self, labels, preds, choices, bins):
+        [self.update_weights(l, p, c, b) for l, p, c, b in zip(labels, preds, choices, bins)]
 
     def get_param(self, r_min, r_max, bin):
         possible_value = np.linspace(r_min, r_max, self.n_bins)
