@@ -8,7 +8,7 @@ from training_loop import training
 
 # hyperparams   (most are from section 4 in the FixMatch paper)
 lamda = 1     # proportion of unlabeled loss in total loss
-eta = 0.03    # learning rate
+eta = 0.03/2    # learning rate
 beta = 0.09   # momentum
 tau = 0.95    # threshold in pseudo-labeling
 mu = 7        # proportion of unlabeled samples in batch
