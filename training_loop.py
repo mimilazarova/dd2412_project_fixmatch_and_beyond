@@ -188,7 +188,7 @@ def training(model, full_x_l, full_x_u, full_y_l, hparams, n_classes, mean=None,
                     full_x_u = np.stack(full_x_u)
                     full_x_u = shuffle(full_x_u)
                     ds_u = tf.data.Dataset.from_tensor_slices(full_x_u)
-                    ds_u = ds_u.batch(hparams['batch_size']).prefetch(-1)
+                    ds_u = ds_u.batch(int(hparams['mu']*hparams['batch_size'])).prefetch(-1)
                 else:
                     supervised = True
 
