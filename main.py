@@ -1,4 +1,4 @@
-from wide_resnet import WRN_28_2
+from wide_resnet import WRN_28_2, RN_28
 from error import test_error
 # import tensorflow_datasets as tfds
 from load_data import *
@@ -15,8 +15,8 @@ mu = 7        # proportion of unlabeled samples in batch
 B = 64        # number of labeled examples in batch (in training)
 K = 390625   # number of training steps in total
 nesterov = True
-batch_size = 64  # should be 64?
-epochs = 500
+batch_size = 32  # should be 64?
+epochs = 250
 # weight decay
 # SGD instead of Adam
 
@@ -46,9 +46,10 @@ def main(argv):
     test, test_labels = LoadTest(test_directory, dataset)
     logging.info("test dataset loaded")
 
-    wrn_28_2 = WRN_28_2()
+    # wrn_28_2 = WRN_28_2()
+    rn = RN_28()
     logging.info("model created")
-    model = training(wrn_28_2, lds, uds, labels, hparams, n_classes)
+    model = training(rn, lds, uds, labels, hparams, n_classes)
     logging.info("model trained")
     err = test_error(model, test, test_labels)
     logging.info("Test accuracy: {} on {}.{}@{}-label".format(err, dataset, seed, n_label))
