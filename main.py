@@ -1,4 +1,4 @@
-from wide_resnet import WRN_28_2, RN_28
+from wide_resnet import WRN_28_2, RN_16
 from error import test_error
 # import tensorflow_datasets as tfds
 from load_data import *
@@ -12,11 +12,11 @@ eta = 0.03/2    # learning rate
 beta = 0.09   # momentum
 tau = 0.95    # threshold in pseudo-labeling
 mu = 7        # proportion of unlabeled samples in batch
-B = 64        # number of labeled examples in batch (in training)
+B = 32        # number of labeled examples in batch (in training)
 K = 390625   # number of training steps in total
 nesterov = True
 batch_size = 32  # should be 64?
-epochs = 250
+epochs = 150
 # weight decay
 # SGD instead of Adam
 
@@ -47,7 +47,7 @@ def main(argv):
     logging.info("test dataset loaded")
 
     # wrn_28_2 = WRN_28_2()
-    rn = RN_28()
+    rn = RN_16()
     logging.info("model created")
     model = training(rn, lds, uds, labels, hparams, n_classes)
     logging.info("model trained")

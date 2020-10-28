@@ -147,3 +147,8 @@ def RN_28(shortcut_type='B', load_weights=False, dropout=0, l2_reg=2.5e-4):
     model = cifar_wide_resnet(28, 1, 'preactivated', shortcut_type, dropout=dropout, l2_reg=l2_reg)
     if load_weights: model = load_weights_func(model, 'cifar_WRN_28_10')
     return model
+
+def RN_16(shortcut_type='B', load_weights=False, dropout=0, l2_reg=2.5e-4):
+    model = cifar_wide_resnet(16, 1, 'preactivated', shortcut_type, dropout=dropout, l2_reg=l2_reg)
+    if load_weights: model = load_weights_func(model, 'cifar_WRN_28_10')
+    return model
