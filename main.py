@@ -4,7 +4,8 @@ from error import test_error
 from load_data import *
 import sys
 import logging
-from training_loop import training
+#from training_loop import training
+from new_training_loop import training
 
 # hyperparams   (most are from section 4 in the FixMatch paper)
 lamda = 1     # proportion of unlabeled loss in total loss
