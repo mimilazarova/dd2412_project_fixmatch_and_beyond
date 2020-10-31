@@ -48,7 +48,7 @@ def main(argv):
     test, test_labels = LoadTest(test_directory, dataset)
     logging.info("test dataset loaded")
 
-    K = int(uds.shape[0]/batch_size)*epochs
+    K = int(uds.shape[0]/(batch_size*mu))*epochs
     hparams['K'] = K
 
     # wrn_28_2 = WRN_28_2()
