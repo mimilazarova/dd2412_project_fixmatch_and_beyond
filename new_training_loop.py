@@ -51,7 +51,7 @@ def training(model, full_x_l, full_x_u, full_y_l, hparams, n_classes, mean=None,
         max_probs = tf.math.multiply(one_hot, tf.nn.softmax(logits))
         return tf.cast(max_probs > threshold, max_probs.dtype)  # * max_probs
 
-    def sample_labeled_data(ds, y, batch_size):
+    def sample_labeled_data(ds=full_x_l, y=full_y_l, batch_size=hparams['batch_size']):
         total_samples = ds.shape[0]
         if total_samples >= batch_size:
             choices = np.random.choice(np.arange(total_samples), batch_size, replace=False)
@@ -120,7 +120,7 @@ def training(model, full_x_l, full_x_u, full_y_l, hparams, n_classes, mean=None,
             for x_u in tqdm(ds_u, desc='epoch {}/{}'.format(epoch + 1, hparams['epochs']),
                                         total=val_interval, ncols=100, ascii=True):
                 training_step += 1
-                x_l, y_l = sample_labeled_data(full_x_l, full_y_l)
+                x_l, y_l = sample_labeled_data()
                 step(x_l, y_l, x_u)
 
     return model
