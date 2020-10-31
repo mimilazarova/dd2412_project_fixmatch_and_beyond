@@ -51,6 +51,18 @@ def training(model, full_x_l, full_x_u, full_y_l, hparams, n_classes, mean=None,
         max_probs = tf.math.multiply(one_hot, tf.nn.softmax(logits))
         return tf.cast(max_probs > threshold, max_probs.dtype)  # * max_probs
 
+    def sample_labeled_data(ds, y, batch_size):
+        total_samples = ds.shape[0]
+        if total_samples >= batch_size:
+            choices = np.random.choice(np.arange(total_samples), batch_size, replace=False)
+        else:
+            choices = np.random.choice(np.arange(total_samples), batch_size, replace=True)
+
+        x_l = ds[choices, :, :, :]
+        y_l = y[choices]
+
+        return x_l, y_l
+
     def step(x_l, y_l, x_u):
         with tf.GradientTape() as tape:
 
@@ -88,20 +100,27 @@ def training(model, full_x_l, full_x_u, full_y_l, hparams, n_classes, mean=None,
 
     cta = CTAugment(hparams['cta_classes'], hparams['cta_decay'], hparams['cta_threshold'], hparams['cta_depth'])
 
-    ds_l = tf.data.Dataset.from_tensor_slices((full_x_l, full_y_l))
+    # ds_l = tf.data.Dataset.from_tensor_slices((full_x_l, full_y_l))
     ds_u = tf.data.Dataset.from_tensor_slices(full_x_u)
 
     # split into batches
-    ds_l = ds_l.batch(hparams['batch_size']).prefetch(-1)
+    # ds_l = ds_l.batch(hparams['batch_size']).prefetch(-1)
     ds_u = ds_u.batch(int(hparams['mu'] * hparams['batch_size'])).prefetch(-1)
     # if type casting needed: x = tf.cast(x, tf.float32)
 
     training_step = 0
 
+    # for epoch in range(hparams['epochs']):
+    #         for (x_l, y_l), x_u in tqdm(zip(ds_l, ds_u), desc='epoch {}/{}'.format(epoch + 1, hparams['epochs']),
+    #                                     total=val_interval, ncols=100, ascii=True):
+    #             training_step += 1
+    #             step(x_l, y_l, x_u)
+
     for epoch in range(hparams['epochs']):
-            for (x_l, y_l), x_u in tqdm(zip(ds_l, ds_u), desc='epoch {}/{}'.format(epoch + 1, hparams['epochs']),
+            for x_u in tqdm(ds_u, desc='epoch {}/{}'.format(epoch + 1, hparams['epochs']),
                                         total=val_interval, ncols=100, ascii=True):
                 training_step += 1
+                x_l, y_l = sample_labeled_data(full_x_l, full_y_l)
                 step(x_l, y_l, x_u)
 
     return model

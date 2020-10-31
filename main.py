@@ -17,7 +17,8 @@ B = 32        # number of labeled examples in batch (in training)
 K = 390625   # number of training steps in total
 nesterov = True
 batch_size = 32  # should be 64?
-epochs = 150
+epochs = 20
+
 # weight decay
 # SGD instead of Adam
 
@@ -46,6 +47,9 @@ def main(argv):
     logging.info("datasets loaded")
     test, test_labels = LoadTest(test_directory, dataset)
     logging.info("test dataset loaded")
+
+    K = int(uds.shape[0]/batch_size)*epochs
+    hparams['K'] = K
 
     # wrn_28_2 = WRN_28_2()
     rn = RN_16()
