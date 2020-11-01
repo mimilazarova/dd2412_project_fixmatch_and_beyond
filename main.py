@@ -51,14 +51,15 @@ def main(argv):
     K = int(uds.shape[0]/(batch_size*mu))*epochs
     hparams['K'] = K
 
-    # wrn_28_2 = WRN_28_2()
-    rn = RN_16()
+    rn = WRN_28_2()
+    # rn = RN_16()
     logging.info("model created")
     model = training(rn, lds, uds, labels, hparams, n_classes)
     logging.info("model trained")
     err = test_error(model, test, test_labels)
     logging.info("Test accuracy: {} on {}.{}@{}-label".format(err, dataset, seed, n_label))
     print("Test accuracy: {} on {}.{}@{}-label".format(err, dataset, seed, n_label))
+
 
 if __name__ == "__main__":
     logging.basicConfig(level=logging.DEBUG)
