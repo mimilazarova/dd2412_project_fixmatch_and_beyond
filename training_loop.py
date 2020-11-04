@@ -115,8 +115,8 @@ def training(model, full_x_l, full_x_u, full_y_l, hparams, n_classes, mean=None,
     ds_u = tf.data.Dataset.from_tensor_slices(full_x_u)
 
     # split into batches
-    ds_l = ds_l.batch(hparams['batch_size']).prefetch(-1)
-    ds_u = ds_u.batch(int(hparams['mu']*hparams['batch_size'])).prefetch(-1)
+    ds_l = ds_l.batch(hparams['B']).prefetch(-1)
+    ds_u = ds_u.batch(int(hparams['mu']*hparams['B'])).prefetch(-1)
     # if type casting needed: x = tf.cast(x, tf.float32)
     supervised = False
     training_step = 0
@@ -168,27 +168,27 @@ def training(model, full_x_l, full_x_u, full_y_l, hparams, n_classes, mean=None,
 
                 full_x_l, full_y_l = shuffle_in_unison(full_x_l, full_y_l)
                 ds_l = tf.data.Dataset.from_tensor_slices((full_x_l, full_y_l))
-                ds_l = ds_l.batch(hparams['batch_size']).prefetch(-1)
+                ds_l = ds_l.batch(hparams['B']).prefetch(-1)
 
                 #if len(full_x_u) > 0:  CHANGED
-                if len(full_x_u) > hparams['batch_size']:
+                if len(full_x_u) > hparams['B']:
                     full_x_u = np.stack(full_x_u)
                     full_x_u = shuffle(full_x_u)
                     ds_u = tf.data.Dataset.from_tensor_slices(full_x_u)
-                    ds_u = ds_u.batch(int(hparams['mu']*hparams['batch_size'])).prefetch(-1)
+                    ds_u = ds_u.batch(int(hparams['mu']*hparams['B'])).prefetch(-1)
                 else:
                     supervised = True
 
             else:
                 full_x_l, full_y_l = shuffle_in_unison(full_x_l, full_y_l)
                 ds_l = tf.data.Dataset.from_tensor_slices((full_x_l, full_y_l))
-                ds_l = ds_l.batch(hparams['batch_size']).prefetch(-1)
+                ds_l = ds_l.batch(hparams['B']).prefetch(-1)
 
                 if len(full_x_u) > 0:
                     full_x_u = np.stack(full_x_u)
                     full_x_u = shuffle(full_x_u)
                     ds_u = tf.data.Dataset.from_tensor_slices(full_x_u)
-                    ds_u = ds_u.batch(int(hparams['mu']*hparams['batch_size'])).prefetch(-1)
+                    ds_u = ds_u.batch(int(hparams['mu']*hparams['B'])).prefetch(-1)
                 else:
                     supervised = True
 

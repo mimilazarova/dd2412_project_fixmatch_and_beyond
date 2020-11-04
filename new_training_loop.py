@@ -51,7 +51,7 @@ def training(model, full_x_l, full_x_u, full_y_l, hparams, n_classes, mean=None,
         max_probs = tf.math.multiply(one_hot, tf.nn.softmax(logits))
         return tf.cast(max_probs > threshold, max_probs.dtype)  # * max_probs
 
-    def sample_labeled_data(ds=full_x_l, y=full_y_l, batch_size=hparams['batch_size']):
+    def sample_labeled_data(ds=full_x_l, y=full_y_l, batch_size=hparams['B']):
         total_samples = ds.shape[0]
         if total_samples >= batch_size:
             choices = np.random.choice(np.arange(total_samples), batch_size, replace=False)
@@ -110,8 +110,8 @@ def training(model, full_x_l, full_x_u, full_y_l, hparams, n_classes, mean=None,
     ds_u = tf.data.Dataset.from_tensor_slices(full_x_u)
 
     # split into batches
-    # ds_l = ds_l.batch(hparams['batch_size']).prefetch(-1)
-    ds_u = ds_u.batch(int(hparams['mu'] * hparams['batch_size'])).prefetch(-1)
+    # ds_l = ds_l.batch(hparams['B']).prefetch(-1)
+    ds_u = ds_u.batch(int(hparams['mu'] * hparams['B'])).prefetch(-1)
     # if type casting needed: x = tf.cast(x, tf.float32)
 
     training_step = 0
