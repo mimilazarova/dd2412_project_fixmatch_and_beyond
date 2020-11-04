@@ -19,6 +19,11 @@ nesterov = True
 batch_size = 32  # should be 64?
 epochs = 20
 
+# Weight decay: CIFAR10 CIFAR100 SVHN   STL-10
+#               0.0005  0.001    0.0005 0.0005
+weight_decay = 0.0005
+
+
 # weight decay
 # SGD instead of Adam
 
@@ -29,7 +34,7 @@ cta_depth = 2
 cta_threshold = 0.8
 
 hparams = {'lamda': lamda, 'eta': eta, 'beta': beta, 'tau': tau, 'mu': mu, 'B': B, 'K': K, 'nesterov': False, 'batch_size': batch_size,
-           'epochs': epochs,
+           'epochs': epochs, 'weight_decay': weight_decay,
            'cta_decay': cta_decay, 'cta_depth': cta_depth, 'cta_threshold': cta_threshold}
 
 def main(argv):

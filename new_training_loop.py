@@ -93,7 +93,13 @@ def training(model, full_x_l, full_x_u, full_y_l, hparams, n_classes, mean=None,
 
 
     schedule = OurCosineDecay(hparams['eta'], hparams['K'])
-    optimizer = tf.keras.optimizers.SGD(schedule, momentum=hparams['beta'], nesterov=hparams['nesterov'])
+    #optimizer = tf.keras.optimizers.SGD(schedule, momentum=hparams['beta'], nesterov=hparams['nesterov'])
+    optimizer = tfa.optimizers.SGDW(hparams['weight_decay'],
+                                    schedule, momentum=hparams['beta'],
+                                    nesterov=hparams['nesterov'])
+
+    loss_fn_u = tf.keras.losses.CategoricalCrossentropy(from_logits=True)
+    loss_fn_l = tf.keras.losses.SparseCategoricalCrossentropy(from_logits=True)
 
     loss_fn_u = tf.keras.losses.CategoricalCrossentropy(from_logits=True)
     loss_fn_l = tf.keras.losses.SparseCategoricalCrossentropy(from_logits=True)
