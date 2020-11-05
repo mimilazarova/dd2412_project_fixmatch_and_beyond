@@ -9,11 +9,11 @@ from new_training_loop import training
 
 # hyperparams   (most are from section 4 in the FixMatch paper)
 lamda = 1     # proportion of unlabeled loss in total loss
-eta = 0.03/4  # learning rate
 beta = 0.9   # momentum
 tau = 0.95    # threshold in pseudo-labeling
 mu = 7        # proportion of unlabeled samples in batch
 B = 16        # batch size
+eta = 0.03*B/64  # learning rate
 #K = 58593    # number of training steps in total
 nesterov = True
 epochs = 150
