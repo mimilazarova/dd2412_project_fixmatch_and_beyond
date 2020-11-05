@@ -14,7 +14,7 @@ beta = 0.09   # momentum
 tau = 0.95    # threshold in pseudo-labeling
 mu = 7        # proportion of unlabeled samples in batch
 B = 16        # batch size
-K = 58593    # number of training steps in total
+#K = 58593    # number of training steps in total
 nesterov = True
 epochs = 150
 
@@ -32,7 +32,7 @@ cta_decay = 0.99
 cta_depth = 2
 cta_threshold = 0.8
 
-hparams = {'lamda': lamda, 'eta': eta, 'beta': beta, 'tau': tau, 'mu': mu, 'B': B, 'K': K, 'nesterov': False,
+hparams = {'lamda': lamda, 'eta': eta, 'beta': beta, 'tau': tau, 'mu': mu, 'B': B, 'nesterov': False,
            'epochs': epochs, 'weight_decay': weight_decay,
            'cta_decay': cta_decay, 'cta_depth': cta_depth, 'cta_threshold': cta_threshold}
 
