@@ -49,9 +49,11 @@ def main(argv):
     test, test_labels = LoadTest(test_directory, dataset)
     logging.info("test dataset loaded")
 
-
     K = int(uds.shape[0]*epochs/(B*mu))
     hparams['K'] = K
+
+    if dataset == "cifar100":
+        hparams['weight_decay'] = 0.001
 
     # rn = WRN_28_2()
     rn = RN_16()
