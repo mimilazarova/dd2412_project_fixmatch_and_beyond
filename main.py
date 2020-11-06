@@ -8,19 +8,21 @@ import logging
 from new_training_loop import training
 
 # hyperparams   (most are from section 4 in the FixMatch paper)
-lamda = 1     # proportion of unlabeled loss in total loss
-eta = 0.03/4  # learning rate
-beta = 0.9   # momentum
-tau = 0.95    # threshold in pseudo-labeling
-mu = 7        # proportion of unlabeled samples in batch
-B = 16        # batch size
-#K = 58593    # number of training steps in total
+lamda = 1       # proportion of unlabeled loss in total loss
+beta = 0.9      # momentum
+tau = 0.95      # threshold in pseudo-labeling
+mu = 7          # proportion of unlabeled samples in batch
+B = 16          # batch size
+eta = 0.03*B/64 # learning rate
+#K = 58593      # number of training steps in total
 nesterov = True
 epochs = 150
 
 # Weight decay: CIFAR10 CIFAR100 SVHN   STL-10
 #               0.0005  0.001    0.0005 0.0005
-weight_decay = 0.0005
+# weight_decay = 0.0005
+
+weight_decay = {"cifar10": 0.0005, "cifar100": 0.001, "svhn": 0.0005, "stl": 0.0005}
 
 
 # weight decay
@@ -33,7 +35,7 @@ cta_depth = 2
 cta_threshold = 0.8
 
 hparams = {'lamda': lamda, 'eta': eta, 'beta': beta, 'tau': tau, 'mu': mu, 'B': B, 'nesterov': False,
-           'epochs': epochs, 'weight_decay': weight_decay,
+           'epochs': epochs,
            'cta_decay': cta_decay, 'cta_depth': cta_depth, 'cta_threshold': cta_threshold}
 
 def main(argv):
@@ -41,6 +43,7 @@ def main(argv):
     logging.info("now in main")
     data_directory = argv[0]
     dataset = argv[1]
+    hparams['weight_decay'] = weight_decay[dataset]
     seed = argv[2]
     n_label = argv[3]
     n_classes = int(argv[4])

@@ -37,6 +37,7 @@ class OurCosineDecay(tf.keras.experimental.CosineDecay):
 
 def training(model, full_x_l, full_x_u, full_y_l, hparams, n_classes, mean=None, std=None,
              val_interval=2000, log_interval=200):
+
     def weak_transformation(x):
         x = tf.image.random_flip_left_right(x)
         max_shift = tf.cast(x.shape[1] * 0.125, dtype=tf.dtypes.int32)
@@ -106,11 +107,11 @@ def training(model, full_x_l, full_x_u, full_y_l, hparams, n_classes, mean=None,
 
     cta = CTAugment(hparams['cta_classes'], hparams['cta_decay'], hparams['cta_threshold'], hparams['cta_depth'])
 
-    # ds_l = tf.data.Dataset.from_tensor_slices((full_x_l, full_y_l))
+    ds_l = tf.data.Dataset.from_tensor_slices((full_x_l, full_y_l))
     ds_u = tf.data.Dataset.from_tensor_slices(full_x_u)
 
     # split into batches
-    # ds_l = ds_l.batch(hparams['B']).prefetch(-1)
+    ds_l = ds_l.batch(hparams['B']).prefetch(-1)
     ds_u = ds_u.batch(int(hparams['mu'] * hparams['B'])).prefetch(-1)
     # if type casting needed: x = tf.cast(x, tf.float32)
 
@@ -123,7 +124,7 @@ def training(model, full_x_l, full_x_u, full_y_l, hparams, n_classes, mean=None,
     #             step(x_l, y_l, x_u)
 
     for epoch in range(hparams['epochs']):
-            for x_u in tqdm(ds_u, desc='epoch {}/{}'.format(epoch + 1, hparams['epochs']),
+            for x_l, y_l, x_u in tqdm(ds_l, ds_u, desc='epoch {}/{}'.format(epoch + 1, hparams['epochs']),
                                         total=val_interval, ncols=100, ascii=True):
                 training_step += 1
                 x_l, y_l = sample_labeled_data()
