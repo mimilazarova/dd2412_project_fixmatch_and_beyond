@@ -24,11 +24,8 @@ epochs = 150
 
 weight_decay = {"cifar10": 0.0005, "cifar100": 0.001, "svhn": 0.0005, "stl": 0.0005}
 
-
 # weight decay
 # SGD instead of Adam
-
-
 #CTAugment params
 cta_decay = 0.99
 cta_depth = 2
@@ -55,11 +52,14 @@ def main(argv):
     test, test_labels = LoadTest(test_directory, dataset)
     logging.info("test dataset loaded")
 
-    K = int(uds.shape[0]/(B*mu))*epochs
+    K = int(uds.shape[0]*epochs/(B*mu))
     hparams['K'] = K
 
-    rn = WRN_28_2()
-    # rn = RN_16()
+    if dataset == "cifar100":
+        hparams['weight_decay'] = 0.001
+
+    # rn = WRN_28_2()
+    rn = RN_16()
     logging.info("model created")
     model = training(rn, lds, uds, labels, hparams, n_classes)
     logging.info("model trained")
