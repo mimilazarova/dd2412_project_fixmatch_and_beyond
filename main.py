@@ -1,4 +1,4 @@
-from wide_resnet import WRN_28_2, RN_16
+from wide_resnet import WRN_28_2, RN_16, RN_28
 from error import test_error
 # import tensorflow_datasets as tfds
 from load_data import *
@@ -52,8 +52,9 @@ def main(argv):
     hparams['total'] = total
     hparams['weight_decay'] = weight_decay[dataset]
 
-    rn = WRN_28_2()
-    # rn = RN_16()
+    # rn = WRN_28_2()
+    # rn = RN_28()
+    rn = RN_16()
     logging.info("model created")
     model = training(rn, lds, uds, labels, hparams, n_classes)
     logging.info("model trained")
