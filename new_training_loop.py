@@ -14,6 +14,7 @@ from tensorflow.python.framework import constant_op
 from tensorflow.python.framework import ops
 from tensorflow.python.ops import math_ops
 import math
+from error import test_error
 
 
 class OurCosineDecay(tf.keras.experimental.CosineDecay):
@@ -35,8 +36,7 @@ class OurCosineDecay(tf.keras.experimental.CosineDecay):
             return math_ops.multiply(initial_learning_rate, decayed)
 
 
-def training(model, full_x_l, full_x_u, full_y_l, hparams, n_classes, mean=None, std=None,
-             val_interval=2000, log_interval=200):
+def training(model, full_x_l, full_x_u, full_y_l, hparams, n_classes, mean=None, std=None, log_interval=200):
 
     def weak_transformation(x):
         x = tf.image.random_flip_left_right(x)
@@ -116,6 +116,7 @@ def training(model, full_x_l, full_x_u, full_y_l, hparams, n_classes, mean=None,
     # if type casting needed: x = tf.cast(x, tf.float32)
 
     training_step = 0
+    epoch = 0
 
     # for epoch in range(hparams['epochs']):
     #         for (x_l, y_l), x_u in tqdm(zip(ds_l, ds_u), desc='epoch {}/{}'.format(epoch + 1, hparams['epochs']),
@@ -123,11 +124,21 @@ def training(model, full_x_l, full_x_u, full_y_l, hparams, n_classes, mean=None,
     #             training_step += 1
     #             step(x_l, y_l, x_u)
 
-    for epoch in range(hparams['epochs']):
-            for x_u in tqdm(ds_u, desc='epoch {}/{}'.format(epoch + 1, hparams['epochs']),
-                                        total=val_interval, ncols=100, ascii=True):
+    #for epoch in range(hparams['epochs']):
+    while training_step < hparams['K']:
+
+            epoch += 1
+            for x_u in tqdm(ds_u, desc='epoch {}'.format(epoch),
+                                        total=hparams['total'], ncols=100, ascii=True):
                 training_step += 1
                 x_l, y_l = sample_labeled_data()
                 step(x_l, y_l, x_u)
 
+                if training_step >= hparams['K']:
+                    break
+
+            print('epoch: {}, labeled accuracy: {}'.format(epoch, test_error(model, full_x_l, full_y_l)))
+
+            # if training_step >= hparams['K']:
+            #     break
     return model

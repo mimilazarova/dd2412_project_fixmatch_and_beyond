@@ -6,6 +6,7 @@ import sys
 import logging
 #from training_loop import training
 from new_training_loop import training
+import math
 
 # hyperparams   (most are from section 4 in the FixMatch paper)
 lamda = 1       # proportion of unlabeled loss in total loss
@@ -14,14 +15,9 @@ tau = 0.95      # threshold in pseudo-labeling
 mu = 7          # proportion of unlabeled samples in batch
 B = 16          # batch size
 eta = 0.03*B/64 # learning rate
-#K = 58593      # number of training steps in total
+K = 500000      # number of training steps in total
 nesterov = True
-epochs = 150
-
-# Weight decay: CIFAR10 CIFAR100 SVHN   STL-10
-#               0.0005  0.001    0.0005 0.0005
-# weight_decay = 0.0005
-
+epochs = 10000
 weight_decay = {"cifar10": 0.0005, "cifar100": 0.001, "svhn": 0.0005, "stl": 0.0005}
 
 # weight decay
@@ -32,7 +28,7 @@ cta_depth = 2
 cta_threshold = 0.8
 
 hparams = {'lamda': lamda, 'eta': eta, 'beta': beta, 'tau': tau, 'mu': mu, 'B': B, 'nesterov': False,
-           'epochs': epochs,
+           'epochs': epochs, 'K': K,
            'cta_decay': cta_decay, 'cta_depth': cta_depth, 'cta_threshold': cta_threshold}
 
 def main(argv):
@@ -52,14 +48,12 @@ def main(argv):
     test, test_labels = LoadTest(test_directory, dataset)
     logging.info("test dataset loaded")
 
-    K = int(uds.shape[0]*epochs/(B*mu))
-    hparams['K'] = K
+    total = math.ceil(uds.shape[0]/(B*mu))
+    hparams['total'] = total
+    hparams['weight_decay'] = weight_decay[dataset]
 
-    if dataset == "cifar100":
-        hparams['weight_decay'] = 0.001
-
-    # rn = WRN_28_2()
-    rn = RN_16()
+    rn = WRN_28_2()
+    # rn = RN_16()
     logging.info("model created")
     model = training(rn, lds, uds, labels, hparams, n_classes)
     logging.info("model trained")
