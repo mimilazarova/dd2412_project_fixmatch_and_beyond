@@ -15,6 +15,7 @@ from tensorflow.python.framework import ops
 from tensorflow.python.ops import math_ops
 import math
 from error import test_error
+import logging
 
 
 class OurCosineDecay(tf.keras.experimental.CosineDecay):
@@ -137,7 +138,7 @@ def training(model, full_x_l, full_x_u, full_y_l, hparams, n_classes, mean=None,
                 if training_step >= hparams['K']:
                     break
 
-            print('epoch: {}, labeled accuracy: {}'.format(epoch, test_error(model, full_x_l, full_y_l)))
+            logging.info('epoch: {}, labeled accuracy: {}'.format(epoch, test_error(model, full_x_l, full_y_l)))
 
             # if training_step >= hparams['K']:
             #     break
