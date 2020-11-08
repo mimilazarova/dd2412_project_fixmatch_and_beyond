@@ -37,7 +37,7 @@ class OurCosineDecay(tf.keras.experimental.CosineDecay):
             return math_ops.multiply(initial_learning_rate, decayed)
 
 
-def training(model, full_x_l, full_x_u, full_y_l, hparams, n_classes, mean=None, std=None, log_interval=200):
+def training(model, full_x_l, full_x_u, full_y_l, hparams, n_classes, file_name, log_interval=200):
 
     def weak_transformation(x):
         x = tf.image.random_flip_left_right(x)
@@ -118,7 +118,7 @@ def training(model, full_x_l, full_x_u, full_y_l, hparams, n_classes, mean=None,
 
     training_step = 0
     epoch = 0
-
+    best_training_accuracy = 0
     # for epoch in range(hparams['epochs']):
     #         for (x_l, y_l), x_u in tqdm(zip(ds_l, ds_u), desc='epoch {}/{}'.format(epoch + 1, hparams['epochs']),
     #                                     total=val_interval, ncols=100, ascii=True):
@@ -138,8 +138,11 @@ def training(model, full_x_l, full_x_u, full_y_l, hparams, n_classes, mean=None,
                 if training_step >= hparams['K']:
                     break
 
-            logging.info('epoch: {}, labeled accuracy: {}'.format(epoch, test_error(model, full_x_l, full_y_l)))
+            err = test_error(model, full_x_l, full_y_l)
+            logging.info('epoch: {}, labeled accuracy: {}'.format(epoch, err))
 
-            # if training_step >= hparams['K']:
-            #     break
+            if err > best_training_accuracy:
+                best_training_accuracy = err
+                tf.keras.models.save_model(model, filepath=file_name)
+
     return model

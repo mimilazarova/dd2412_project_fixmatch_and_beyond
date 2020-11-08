@@ -55,12 +55,20 @@ def main(argv):
     # rn = WRN_28_2()
     # rn = RN_28()
     rn = RN_16()
+
+    model_fname = "{}-{}-{}.ckpt".format(dataset, seed, n_label)
+
     logging.info("model created")
-    model = training(rn, lds, uds, labels, hparams, n_classes)
+    model = training(rn, lds, uds, labels, hparams, n_classes, model_fname)
     logging.info("model trained")
     err = test_error(model, test, test_labels)
     logging.info("Test accuracy: {} on {}.{}@{}-label".format(err, dataset, seed, n_label))
     print("Test accuracy: {} on {}.{}@{}-label".format(err, dataset, seed, n_label))
+
+    model = tf.keras.models.load_model(model_fname)
+    err = test_error(model, test, test_labels)
+    logging.info("Test accuracy best model: {} on {}.{}@{}-label".format(err, dataset, seed, n_label))
+    print("Test accuracy best model: {} on {}.{}@{}-label".format(err, dataset, seed, n_label))
 
 
 if __name__ == "__main__":
