@@ -1,0 +1,3 @@
+['/home/mimiglazarova/data/SSL2', 'cifar10', '1', '250', '10', '/home/mimiglazarova/data']
+Test accuracy: 0.2746 on cifar10.1@250-label
+Test accuracy best model: 0.3426 on cifar10.1@250-label
