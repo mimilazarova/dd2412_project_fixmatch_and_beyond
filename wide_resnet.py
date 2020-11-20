@@ -58,13 +58,13 @@ def preactivation_block(x, filters, stride=1, preact_block=False):
     return x + c2
 
 
-def bootleneck_block(x, filters, stride=1, preact_block=False):
+def bottleneck_block(x, filters, stride=1, preact_block=False):
     flow = BN_ReLU(x)
     if preact_block:
         x = flow
 
-    c1 = regularized_padded_conv(filters // _bootleneck_width, 1)(flow)
-    c2 = regularized_padded_conv(filters // _bootleneck_width, 3, strides=stride)(BN_ReLU(c1))
+    c1 = regularized_padded_conv(filters // _bottleneck_width, 1)(flow)
+    c2 = regularized_padded_conv(filters // _bottleneck_width, 3, strides=stride)(BN_ReLU(c1))
     c3 = regularized_padded_conv(filters, 1)(BN_ReLU(c2))
     x = shortcut(x, filters, stride, mode=_shortcut_type)
     return x + c3
@@ -82,9 +82,9 @@ def group_of_blocks(x, block_type, num_blocks, filters, stride, block_idx=0):
 
 def Resnet(input_shape, n_classes, l2_reg=1e-4, group_sizes=(2, 2, 2), features=(16, 32, 64), strides=(1, 2, 2),
            shortcut_type='B', block_type='preactivated', first_conv={"filters": 16, "kernel_size": 3, "strides": 1},
-           dropout=0, cardinality=1, bootleneck_width=4, preact_shortcuts=True):
-    global _regularizer, _shortcut_type, _preact_projection, _dropout, _cardinality, _bootleneck_width, _preact_shortcuts
-    _bootleneck_width = bootleneck_width  # used in ResNeXts and bootleneck blocks
+           dropout=0, cardinality=1, bottleneck_width=4, preact_shortcuts=True):
+    global _regularizer, _shortcut_type, _preact_projection, _dropout, _cardinality, _bottleneck_width, _preact_shortcuts
+    _bottleneck_width = bottleneck_width  # used in ResNeXts and bottleneck blocks
     _regularizer = tf.keras.regularizers.l2(l2_reg)
     _shortcut_type = shortcut_type  # used in blocks
     _cardinality = cardinality  # used in ResNeXts
@@ -92,7 +92,7 @@ def Resnet(input_shape, n_classes, l2_reg=1e-4, group_sizes=(2, 2, 2), features=
     _preact_shortcuts = preact_shortcuts
 
     block_types = {'preactivated': preactivation_block,
-                   'bootleneck': bootleneck_block,
+                   'bottleneck': bottleneck_block,
                    'original': original_block}
 
     selected_block = block_types[block_type]
@@ -127,7 +127,7 @@ def load_weights_func(model, model_name):
     return model
 
 
-def cifar_wide_resnet(N, K, block_type='preactivated', shortcut_type='B', dropout=0, l2_reg=2.5e-4):
+def wide_resnet(N, K, block_type='preactivated', shortcut_type='B', dropout=0, l2_reg=2.5e-4):
     assert (N - 4) % 6 == 0, "N-4 has to be divisible by 6"
     lpb = (N - 4) // 6  # layers per block - since N is total number of convolutional layers in Wide ResNet
     model = Resnet(input_shape=(32, 32, 3), n_classes=10, l2_reg=l2_reg, group_sizes=(lpb, lpb, lpb),
@@ -139,16 +139,16 @@ def cifar_wide_resnet(N, K, block_type='preactivated', shortcut_type='B', dropou
 
 
 def WRN_28_2(shortcut_type='B', load_weights=False, dropout=0, l2_reg=2.5e-4):
-    model = cifar_wide_resnet(28, 2, 'preactivated', shortcut_type, dropout=dropout, l2_reg=l2_reg)
+    model = wide_resnet(28, 2, 'preactivated', shortcut_type, dropout=dropout, l2_reg=l2_reg)
     if load_weights: model = load_weights_func(model, 'cifar_WRN_28_10')
     return model
 
 def RN_28(shortcut_type='B', load_weights=False, dropout=0, l2_reg=2.5e-4):
-    model = cifar_wide_resnet(28, 1, 'preactivated', shortcut_type, dropout=dropout, l2_reg=l2_reg)
+    model = wide_resnet(28, 1, 'preactivated', shortcut_type, dropout=dropout, l2_reg=l2_reg)
     if load_weights: model = load_weights_func(model, 'cifar_WRN_28_10')
     return model
 
 def RN_16(shortcut_type='B', load_weights=False, dropout=0, l2_reg=2.5e-4):
-    model = cifar_wide_resnet(16, 1, 'preactivated', shortcut_type, dropout=dropout, l2_reg=l2_reg)
+    model = wide_resnet(16, 1, 'preactivated', shortcut_type, dropout=dropout, l2_reg=l2_reg)
     if load_weights: model = load_weights_func(model, 'cifar_WRN_28_10')
     return model
